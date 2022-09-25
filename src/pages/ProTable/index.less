@@ -1,6 +1,23 @@
 .wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   width: 100%;
   height: 100%;
-  padding: 20px;
-  background-color: #fff;
+
+  .table_container {
+    width: 60%;
+  }
+  .form_container {
+    width: calc(40% - 20px);
+    // height: 740px;
+    padding: 20px;
+    // overflow-y: auto;
+    background-color: #fff;
+  }
+  .code_container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+  }
 }

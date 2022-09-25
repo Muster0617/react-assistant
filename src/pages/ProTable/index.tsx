@@ -1,23 +1,19 @@
 /* eslint-disable */
 
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tooltip } from 'antd';
-import { useState } from 'react';
-import { PageHeaderWrapper } from '@ant-design/pro-layout';
-
-const tableListDataSource = [];
-
-for (let i = 0; i < 20; i += 1) {
-  tableListDataSource.push({
-    key: i,
-    title:
-      '国家基本公共服务国家基本公共服务国家基本公共服务国家基本公共服务国家基本公共服务国家基本公共服务',
-    office: '国家发展改革委',
-    wordSize: '发改社会',
-    keyword: '政策通知',
-    time: '2022-09-21',
-  });
-}
+import { Button, Space, Tooltip, Divider } from 'antd';
+import { useState, useRef, useEffect } from 'react';
+import {
+  ProForm,
+  ProFormSelect,
+  ProFormText,
+  ProFormList,
+  ProFormDependency,
+  ProFormRadio,
+} from '@ant-design/pro-components';
+import styles from './index.less';
+import { valueTypeOptions } from './constant';
+import { handleClipboard } from '@/utils/index';
 
 const renderTextEllipsis = (text, textSize) => {
   if (text?.length >= textSize) {
@@ -31,174 +27,277 @@ const renderTextEllipsis = (text, textSize) => {
   }
 };
 
+const defaultColumns = [
+  {
+    title: '序号',
+    width: 80,
+    valueType: 'index',
+    hideInSearch: true,
+  },
+  {
+    title: '指标名称',
+    dataIndex: 'title',
+    hideInSearch: true,
+    render: (_, record) => {
+      return renderTextEllipsis(record?.title, 30);
+    },
+  },
+  {
+    title: '操作',
+    width: 200,
+    key: 'option',
+    valueType: 'option',
+    align: 'center',
+    hideInSearch: true,
+    render: (_, record) => [<a key="delete">删除</a>],
+  },
+];
+
 export default ({ history }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [config, setConfig] = useState({});
 
-  const handleExcerpt = () => {
-    console.log(selectedRowKeys, 'selectedRowKeys');
-  };
-  const handleDelete = () => {
-    console.log(selectedRowKeys, 'handleDelete');
-  };
-  const onSelectChange = (newSelectedRowKeys, selectedRow) => {
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-    setSelectedRowKeys(newSelectedRowKeys);
+  const formRef = useRef();
+  const actionRef = useRef();
+
+  const handleCope = (codes: string[]) => {
+    return codes.join(`\r\n`);
   };
 
-  const columns = [
-    {
-      title: '指标名称',
-      dataIndex: 'title',
-      hideInTable: true,
-      fieldProps: {
-        maxLength: 20,
-      },
-    },
-    {
-      title: '数据来源',
-      dataIndex: 'office',
-      valueType: 'select',
-      hideInTable: true,
-      initialValue: null,
-      fieldProps: {
-        options: [
-          {
-            label: '全部',
-            value: null,
-          },
-          {
-            label: '人工',
-            value: 0,
-          },
-          {
-            label: 'API',
-            value: 1,
-          },
-        ],
-      },
-    },
-    {
-      title: '序号',
-      width: 80,
-      dataIndex: 'orderNum',
-      render: (_, record, index) => <span>{index + 1}</span>,
-      hideInSearch: true,
-    },
-    {
-      title: '指标名称',
-      dataIndex: 'title',
-      hideInSearch: true,
-      render: (_, record) => {
-        return renderTextEllipsis(record?.title, 30);
-      },
-    },
-    {
-      title: '指标定义',
-      dataIndex: 'office',
-      hideInSearch: true,
-    },
-    {
-      title: '数据来源',
-      dataIndex: 'wordSize',
-      hideInSearch: true,
-    },
-    {
-      title: '指标状态',
-      dataIndex: 'keyword',
-      hideInSearch: true,
-    },
-    {
-      title: '发布时间',
-      dataIndex: 'time',
-      hideInSearch: true,
-    },
-    {
-      title: '操作',
-      width: 200,
-      key: 'option',
-      valueType: 'option',
-      align: 'center',
-      hideInSearch: true,
-      render: (_, record) => [
-        <a
-          key="edit"
-          onClick={() => {
-            history.push({
-              pathname: '/targetManagement/targetForm',
-              query: {
-                id: record?.key,
-              },
-            });
-          }}
-        >
-          修改
-        </a>,
-        <a
-          key="data"
-          onClick={() => {
-            history.push({
-              pathname: '/targetManagement/dataAllocation',
-              query: {
-                id: record?.key,
-              },
-            });
-          }}
-        >
-          数据
-        </a>,
-        <a key="delete">删除</a>,
-      ],
-    },
-  ];
-  return (
-    <>
-      <ProTable
-        columns={columns}
-        rowSelection={{
-          onChange: onSelectChange,
-          selectedRowKeys,
-        }}
-        tableAlertRender={false}
-        request={async (value) => {
-          console.log(value, 'value');
-          return {
-            data: tableListDataSource,
-            success: true,
-          };
-        }}
-        search={{
-          defaultCollapsed: false,
-          labelWidth: 120,
-        }}
-        scroll={{ x: 'max-content' }}
-        options={false}
-        pagination={{
-          pageSize: 10,
-        }}
-        rowKey="key"
-        headerTitle={
-          <Space>
+  const renderCodes = () => {
+    console.log();
+    const codes = [
+      `import { ProTable } from '@ant-design/pro-components'`,
+      `import { Button, Space, Tooltip } from 'antd';`,
+      `import { useState, useRef, useEffect } from 'react';`,
+      `export default ({ history }) => {`,
+      ...((config?.isSelect && [
+        `   const [selectedRowKeys, setSelectedRowKeys] = useState([]);`,
+        `   const [columns, setColumns] = useState([]);`,
+      ]) ||
+        []),
+      JSON.stringify(columns),
+      `   const actionRef = useRef();`,
+      `   return (`,
+      `     <ProTable`,
+      `       actionRef={actionRef}`,
+      `       columns={columns}`,
+      ...((config?.isSelect && [
+        `       rowSelection={{`,
+        `         onChange: (keys) => setSelectedRowKeys(keys),`,
+        `         selectedRowKeys,`,
+        `       }},`,
+      ]) ||
+        []),
+      `       tableAlertRender={false}`,
+      `       request={async (value) => {return { data: [] }}}`,
+      `       search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
+      `       scroll={{ x: 'max-content' }}`,
+      `       options={false}`,
+      `       pagination={{ pageSize: 10 }}`,
+      `       rowKey="key"`,
+      `     />`,
+      `   )`,
+      `}`,
+    ];
+    return (
+      <div className={styles.code_container}>
+        <div>
+          <Space style={{ display: 'flex', justifyContent: 'end' }}>
             <Button
-              key="add"
-              type="primary"
-              onClick={() => {
-                history.push('/targetManagement/targetForm');
-              }}
+              className="code-copy"
+              type="link"
+              onClick={() => handleClipboard('.code-copy', handleCope(codes))}
             >
-              + 新建
-            </Button>
-            <Button key="putaway" onClick={handleExcerpt}>
-              批量上架
-            </Button>
-            <Button key="soldout" onClick={handleExcerpt}>
-              批量下架
-            </Button>
-            <Button key="delete" onClick={handleDelete}>
-              批量删除
+              复制
             </Button>
           </Space>
-        }
-      />
-    </>
+        </div>
+        <div>
+          <h2>代码：</h2>
+          <code>
+            <pre>
+              {codes.map((code: string, index: number) => (
+                <p key={index}>{code}</p>
+              ))}
+            </pre>
+          </code>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className={styles.wrapper}>
+      <div className={styles.table_container}>
+        <ProTable
+          actionRef={actionRef}
+          columns={columns}
+          {...(config?.isSelect && {
+            rowSelection: {
+              onChange: (keys) => setSelectedRowKeys(keys),
+              selectedRowKeys,
+            },
+          })}
+          tableAlertRender={false}
+          request={async (value) => {
+            return { data: [] };
+          }}
+          search={{ defaultCollapsed: false, labelWidth: 'auto' }}
+          scroll={{ x: 'max-content' }}
+          options={false}
+          pagination={{ pageSize: 10 }}
+          rowKey="key"
+          headerTitle={
+            <Space>
+              <Button key="add" type="primary" onClick={() => {}}>
+                + 新建
+              </Button>
+              <Button key="putaway" onClick={() => {}}>
+                批量上架
+              </Button>
+              <Button key="soldout" onClick={() => {}}>
+                批量下架
+              </Button>
+              <Button key="delete" onClick={() => {}}>
+                批量删除
+              </Button>
+            </Space>
+          }
+        />
+        <div>{renderCodes()}</div>
+      </div>
+      <div className={styles.form_container}>
+        <ProForm
+          formRef={formRef}
+          autoFocusFirstInput
+          onFinish={(values) => {
+            const { filtrateList = [], tableList = [], config = {} } = values;
+            const newColumns = [];
+            for (const item of filtrateList) {
+              const column = {
+                title: item?.title || '',
+                dataIndex: item?.dataIndex || '',
+                valueType: item?.valueType || 'text',
+                hideInTable: true,
+              };
+              newColumns.push(column);
+            }
+            for (const item of tableList) {
+              const column = {
+                title: item?.title || '',
+                dataIndex: item?.dataIndex || '',
+                hideInSearch: true,
+                hasRender: item?.hasRender,
+              };
+              newColumns.push(column);
+            }
+            console.log(values, 'values');
+            setColumns(newColumns);
+            setConfig(config);
+          }}
+          submitter={{
+            searchConfig: {
+              resetText: '重置',
+              submitText: '生成表格',
+            },
+          }}
+        >
+          <ProForm.Group title="表格配置">
+            <ProFormRadio.Group
+              name="isSelect"
+              initialValue={false}
+              label="是否可多选"
+              options={[
+                {
+                  label: '是',
+                  value: true,
+                },
+                {
+                  label: '否',
+                  value: false,
+                },
+              ]}
+              transform={(value) => ({ config: { isSelect: value } })}
+            />
+          </ProForm.Group>
+          <ProForm.Group title="筛选项配置">
+            <ProFormList name="filtrateList">
+              {() => {
+                return (
+                  <>
+                    <ProFormSelect
+                      name="valueType"
+                      initialValue={'text'}
+                      label="valueType"
+                      width="sm"
+                      fieldProps={{
+                        options: valueTypeOptions,
+                      }}
+                    />
+                    <ProForm.Group>
+                      <ProFormText
+                        name="title"
+                        label="title"
+                        width={180}
+                        rules={[{ required: true }]}
+                      />
+                      <ProFormText
+                        name="dataIndex"
+                        label="dataIndex"
+                        width={180}
+                        rules={[{ required: true }]}
+                      />
+                    </ProForm.Group>
+                  </>
+                );
+              }}
+            </ProFormList>
+          </ProForm.Group>
+          <ProForm.Group title="表格项配置">
+            <ProFormList name="tableList">
+              {() => {
+                return (
+                  <>
+                    <ProForm.Group>
+                      <ProFormText
+                        name="title"
+                        label="title"
+                        width={180}
+                        rules={[{ required: true }]}
+                      />
+                      <ProFormText
+                        name="dataIndex"
+                        label="dataIndex"
+                        width={180}
+                        rules={[{ required: true }]}
+                      />
+                    </ProForm.Group>
+                    <ProForm.Group>
+                      <ProFormRadio.Group
+                        name="hasRender"
+                        initialValue={false}
+                        label="是否需要render函数"
+                        options={[
+                          {
+                            label: '是',
+                            value: true,
+                          },
+                          {
+                            label: '否',
+                            value: false,
+                          },
+                        ]}
+                      />
+                    </ProForm.Group>
+                  </>
+                );
+              }}
+            </ProFormList>
+          </ProForm.Group>
+        </ProForm>
+      </div>
+    </div>
   );
 };
