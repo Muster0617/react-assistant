@@ -12,10 +12,8 @@ export default () => {
     },
     {
       title: '创建时间',
-      key: 'showTime',
       dataIndex: 'created_at',
       valueType: 'date',
-      sorter: true,
       hideInSearch: true,
     },
     {
