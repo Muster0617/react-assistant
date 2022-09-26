@@ -66,7 +66,11 @@ export default ({ history }) => {
   };
 
   const renderCodes = () => {
-    console.log();
+    const columnsCode = [`   const columns = [${columns.length === 0 ? ']' : ''}`];
+    for (const column of columns) {
+      columnsCode.push(`        ${JSON.stringify(column)},`);
+    }
+    columns.length > 0 && columnsCode.push('   ]');
     const codes = [
       `import { ProTable } from '@ant-design/pro-components'`,
       `import { Button, Space, Tooltip } from 'antd';`,
@@ -77,8 +81,8 @@ export default ({ history }) => {
         `   const [columns, setColumns] = useState([]);`,
       ]) ||
         []),
-      JSON.stringify(columns),
       `   const actionRef = useRef();`,
+      ...columnsCode,
       `   return (`,
       `     <ProTable`,
       `       actionRef={actionRef}`,
