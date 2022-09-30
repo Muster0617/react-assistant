@@ -12,7 +12,7 @@ import {
   ProFormRadio,
 } from '@ant-design/pro-components';
 import styles from './index.less';
-import { valueTypeOptions } from './constant';
+import { valueTypeOptions, buttonTypeOptions } from './constant';
 import { handleClipboard } from '@/utils/index';
 
 const renderTextEllipsis = (text, textSize) => {
@@ -56,6 +56,8 @@ const defaultColumns = [
 export default ({ history }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [columns, setColumns] = useState([]);
+  const [defaultData, setDefaultData] = useState([]);
+  const [toolBarList, setToolBarList] = useState([]);
   const [config, setConfig] = useState({});
 
   const formRef = useRef();
@@ -65,20 +67,93 @@ export default ({ history }) => {
     return codes.join(`\r\n`);
   };
 
+  const handleToolBarCode = (buttonType, buttonName, buttonKey) => {
+    return [
+      `              <Button key="${buttonKey}" type="${buttonType}" onClick={() => {}}>`,
+      `                 ${buttonName}`,
+      `              </Button>`,
+    ];
+  };
+
+  const handleColumnItemCode = (
+    title,
+    dataIndex,
+    valueType,
+    hideInTable,
+    hideInSearch,
+    hasRender,
+  ) => {
+    return [
+      `      {`,
+      `         title:'${title}',`,
+      `         dataIndex:'${dataIndex}',`,
+      ...((valueType && [`         valueType:'${valueType}',`]) || []),
+      ...((hideInTable && [`         hideInTable:true,`]) || []),
+      ...((hideInSearch && [`         hideInSearch:true,`]) || []),
+      ...((hasRender && [`         render:( _ , record ) => (record?.${dataIndex}),`]) || []),
+      `      },`,
+    ];
+  };
+
+  const handleDefaultData = (tableKeys = []) => {
+    if (tableKeys.length > 0) {
+      let newDefaultData = [];
+      let data = {};
+      for (let i = 0; i < 3; i++) {
+        for (const key of tableKeys) {
+          data[key] = '模拟数据';
+        }
+        newDefaultData.push(data);
+      }
+      console.log(newDefaultData, 'newDefaultData');
+      setDefaultData(newDefaultData);
+    } else {
+      setDefaultData([]);
+    }
+  };
+
   const renderCodes = () => {
-    const columnsCode = [`   const columns = [${columns.length === 0 ? ']' : ''}`];
+    let defaultDataCode = [`const defaultData = [${defaultData.length === 0 ? ']' : ''}`];
+    for (const dataItem of defaultData) {
+      defaultDataCode.push(`    ${JSON.stringify(dataItem)},`);
+    }
+    defaultData.length > 0 && defaultDataCode.push(`]`);
+    // ----------
+    let columnsCode = [`   const columns = [${columns.length === 0 ? ']' : ''}`];
     for (const column of columns) {
-      columnsCode.push(`        ${JSON.stringify(column)},`);
+      columnsCode = columnsCode.concat(
+        handleColumnItemCode(
+          column?.title,
+          column?.dataIndex,
+          column?.valueType,
+          column?.hideInTable,
+          column?.hideInSearch,
+          column?.hasRender,
+        ),
+      );
     }
     columns.length > 0 && columnsCode.push('   ]');
+    // ----------
+    let toolBarCode = [
+      `       headerTitle = {${toolBarList.length === 0 ? '}' : ''}`,
+      ...((toolBarList?.length > 0 && [`           <Space>`]) || []),
+    ];
+    for (const toolBarItem of toolBarList) {
+      toolBarCode = toolBarCode.concat(
+        handleToolBarCode(toolBarItem?.buttonType, toolBarItem?.buttonName, toolBarItem?.buttonKey),
+      );
+    }
+    if (toolBarList.length > 0) toolBarCode = [...toolBarCode, `           </Space>`, `       }`];
+    // ----------
+
     const codes = [
       `import { ProTable } from '@ant-design/pro-components'`,
       `import { Button, Space, Tooltip } from 'antd';`,
       `import { useState, useRef, useEffect } from 'react';`,
+      ...defaultDataCode,
       `export default ({ history }) => {`,
       ...((config?.isSelect && [
         `   const [selectedRowKeys, setSelectedRowKeys] = useState([]);`,
-        `   const [columns, setColumns] = useState([]);`,
       ]) ||
         []),
       `   const actionRef = useRef();`,
@@ -91,16 +166,17 @@ export default ({ history }) => {
         `       rowSelection={{`,
         `         onChange: (keys) => setSelectedRowKeys(keys),`,
         `         selectedRowKeys,`,
-        `       }},`,
+        `       }}`,
       ]) ||
         []),
       `       tableAlertRender={false}`,
-      `       request={async (value) => {return { data: [] }}}`,
+      `       request={async (value) => {return { data: defaultData }}}`,
       `       search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
       `       scroll={{ x: 'max-content' }}`,
       `       options={false}`,
       `       pagination={{ pageSize: 10 }}`,
-      `       rowKey="key"`,
+      `       rowKey="id"`,
+      ...toolBarCode,
       `     />`,
       `   )`,
       `}`,
@@ -137,6 +213,7 @@ export default ({ history }) => {
       <div className={styles.table_container}>
         <ProTable
           actionRef={actionRef}
+          dataSource={defaultData}
           columns={columns}
           {...(config?.isSelect && {
             rowSelection: {
@@ -145,30 +222,22 @@ export default ({ history }) => {
             },
           })}
           tableAlertRender={false}
-          request={async (value) => {
-            return { data: [] };
-          }}
           search={{ defaultCollapsed: false, labelWidth: 'auto' }}
           scroll={{ x: 'max-content' }}
           options={false}
           pagination={{ pageSize: 10 }}
-          rowKey="key"
-          headerTitle={
-            <Space>
-              <Button key="add" type="primary" onClick={() => {}}>
-                + 新建
-              </Button>
-              <Button key="putaway" onClick={() => {}}>
-                批量上架
-              </Button>
-              <Button key="soldout" onClick={() => {}}>
-                批量下架
-              </Button>
-              <Button key="delete" onClick={() => {}}>
-                批量删除
-              </Button>
-            </Space>
-          }
+          rowKey="id"
+          {...(toolBarList?.length > 0 && {
+            headerTitle: (
+              <Space>
+                {toolBarList.map((item) => (
+                  <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
+                    {item.buttonName}
+                  </Button>
+                ))}
+              </Space>
+            ),
+          })}
         />
         <div>{renderCodes()}</div>
       </div>
@@ -188,7 +257,9 @@ export default ({ history }) => {
               };
               newColumns.push(column);
             }
+            let tableKeys = [];
             for (const item of tableList) {
+              tableKeys.push(item?.dataIndex);
               const column = {
                 title: item?.title || '',
                 dataIndex: item?.dataIndex || '',
@@ -197,14 +268,23 @@ export default ({ history }) => {
               };
               newColumns.push(column);
             }
-            console.log(values, 'values');
+            handleDefaultData(tableKeys);
             setColumns(newColumns);
+            setToolBarList(values?.toolBarList || []);
             setConfig(config);
           }}
           submitter={{
             searchConfig: {
               resetText: '重置',
               submitText: '生成表格',
+            },
+            onReset: () => {
+              console.log('setToolBarList');
+              setColumns([]);
+              setSelectedRowKeys([]);
+              setDefaultData([]);
+              setToolBarList([]);
+              setConfig({});
             },
           }}
         >
@@ -225,6 +305,39 @@ export default ({ history }) => {
               ]}
               transform={(value) => ({ config: { isSelect: value } })}
             />
+          </ProForm.Group>
+          <ProForm.Group title="工具栏配置">
+            <ProFormList name="toolBarList">
+              {() => {
+                return (
+                  <>
+                    <ProFormSelect
+                      name="buttonType"
+                      initialValue={'default'}
+                      label="按钮类型"
+                      width="sm"
+                      fieldProps={{
+                        options: buttonTypeOptions,
+                      }}
+                    />
+                    <ProForm.Group>
+                      <ProFormText
+                        name="buttonName"
+                        label="按钮名称"
+                        width={180}
+                        rules={[{ required: true }]}
+                      />
+                      <ProFormText
+                        name="buttonKey"
+                        label="按钮Key"
+                        width={180}
+                        rules={[{ required: true }]}
+                      />
+                    </ProForm.Group>
+                  </>
+                );
+              }}
+            </ProFormList>
           </ProForm.Group>
           <ProForm.Group title="筛选项配置">
             <ProFormList name="filtrateList">

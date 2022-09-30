@@ -24,3 +24,22 @@ export const valueTypeOptions = [
     value: 'dateTimeRange',
   },
 ];
+
+export const buttonTypeOptions = [
+  {
+    label: 'default',
+    value: 'default',
+  },
+  {
+    label: 'primary',
+    value: 'primary',
+  },
+  {
+    label: 'link',
+    value: 'link',
+  },
+  {
+    label: 'text',
+    value: 'text',
+  },
+];
