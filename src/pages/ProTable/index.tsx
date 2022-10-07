@@ -63,11 +63,11 @@ export default ({ history }) => {
   const formRef = useRef();
   const actionRef = useRef();
 
-  const handleCope = (codes: string[]) => {
+  const handleCopes = (codes: string[]) => {
     return codes.join(`\r\n`);
   };
 
-  const handleToolBarCode = (buttonType, buttonName, buttonKey) => {
+  const handleToolBarItemCode = (buttonType: string, buttonName: string, buttonKey: string) => {
     return [
       `              <Button key="${buttonKey}" type="${buttonType}" onClick={() => {}}>`,
       `                 ${buttonName}`,
@@ -75,13 +75,27 @@ export default ({ history }) => {
     ];
   };
 
+  const handleToolBarCode = (list = []) => {
+    let toolBarCode = [
+      `       headerTitle = {${list.length === 0 ? '}' : ''}`,
+      ...((list?.length > 0 && [`           <Space>`]) || []),
+    ];
+    for (const item of list) {
+      toolBarCode = toolBarCode.concat(
+        handleToolBarItemCode(item?.buttonType, item?.buttonName, item?.buttonKey),
+      );
+    }
+    if (list.length > 0) toolBarCode = [...toolBarCode, `           </Space>`, `       }`];
+    return toolBarCode;
+  };
+
   const handleColumnItemCode = (
-    title,
-    dataIndex,
-    valueType,
-    hideInTable,
-    hideInSearch,
-    hasRender,
+    title: string,
+    dataIndex: string,
+    valueType: string,
+    hideInTable: boolean,
+    hideInSearch: boolean,
+    hasRender: boolean,
   ) => {
     return [
       `      {`,
@@ -93,6 +107,24 @@ export default ({ history }) => {
       ...((hasRender && [`         render:( _ , record ) => (record?.${dataIndex}),`]) || []),
       `      },`,
     ];
+  };
+
+  const handleColumnCode = (list = []) => {
+    let columnsCode = [`   const columns = [${list.length === 0 ? ']' : ''}`];
+    for (const item of list) {
+      columnsCode = columnsCode.concat(
+        handleColumnItemCode(
+          item?.title,
+          item?.dataIndex,
+          item?.valueType,
+          item?.hideInTable,
+          item?.hideInSearch,
+          item?.hasRender,
+        ),
+      );
+    }
+    if (list.length > 0) columnsCode.push('   ]');
+    return columnsCode;
   };
 
   const handleDefaultData = (tableKeys = []) => {
@@ -112,38 +144,21 @@ export default ({ history }) => {
     }
   };
 
+  const handleDefaultDataCode = (list = []) => {
+    let defaultDataCode = [`const defaultData = [${list.length === 0 ? ']' : ''}`];
+    for (const item of list) {
+      defaultDataCode.push(`    ${JSON.stringify(item)},`);
+    }
+    if (list.length > 0) defaultDataCode.push(`]`);
+    return defaultDataCode;
+  };
+
   const renderCodes = () => {
-    let defaultDataCode = [`const defaultData = [${defaultData.length === 0 ? ']' : ''}`];
-    for (const dataItem of defaultData) {
-      defaultDataCode.push(`    ${JSON.stringify(dataItem)},`);
-    }
-    defaultData.length > 0 && defaultDataCode.push(`]`);
+    let defaultDataCode = handleDefaultDataCode(defaultData);
     // ----------
-    let columnsCode = [`   const columns = [${columns.length === 0 ? ']' : ''}`];
-    for (const column of columns) {
-      columnsCode = columnsCode.concat(
-        handleColumnItemCode(
-          column?.title,
-          column?.dataIndex,
-          column?.valueType,
-          column?.hideInTable,
-          column?.hideInSearch,
-          column?.hasRender,
-        ),
-      );
-    }
-    columns.length > 0 && columnsCode.push('   ]');
+    let columnsCode = handleColumnCode(columns);
     // ----------
-    let toolBarCode = [
-      `       headerTitle = {${toolBarList.length === 0 ? '}' : ''}`,
-      ...((toolBarList?.length > 0 && [`           <Space>`]) || []),
-    ];
-    for (const toolBarItem of toolBarList) {
-      toolBarCode = toolBarCode.concat(
-        handleToolBarCode(toolBarItem?.buttonType, toolBarItem?.buttonName, toolBarItem?.buttonKey),
-      );
-    }
-    if (toolBarList.length > 0) toolBarCode = [...toolBarCode, `           </Space>`, `       }`];
+    const toolBarCode = toolBarList?.length > 0 ? handleToolBarCode(toolBarList) : [];
     // ----------
 
     const codes = [
@@ -188,7 +203,7 @@ export default ({ history }) => {
             <Button
               className="code-copy"
               type="link"
-              onClick={() => handleClipboard('.code-copy', handleCope(codes))}
+              onClick={() => handleClipboard('.code-copy', handleCopes(codes))}
             >
               复制
             </Button>
@@ -310,31 +325,32 @@ export default ({ history }) => {
             <ProFormList name="toolBarList">
               {() => {
                 return (
-                  <>
+                  <ProForm.Group>
                     <ProFormSelect
                       name="buttonType"
                       initialValue={'default'}
                       label="按钮类型"
-                      width="sm"
+                      width={120}
                       fieldProps={{
                         options: buttonTypeOptions,
                       }}
+                      placeholder="请输入按钮类型"
                     />
-                    <ProForm.Group>
-                      <ProFormText
-                        name="buttonName"
-                        label="按钮名称"
-                        width={180}
-                        rules={[{ required: true }]}
-                      />
-                      <ProFormText
-                        name="buttonKey"
-                        label="按钮Key"
-                        width={180}
-                        rules={[{ required: true }]}
-                      />
-                    </ProForm.Group>
-                  </>
+                    <ProFormText
+                      name="buttonName"
+                      label="按钮名称"
+                      width={180}
+                      rules={[{ required: true }]}
+                      placeholder="请输入按钮名称"
+                    />
+                    <ProFormText
+                      name="buttonKey"
+                      label="按钮Key"
+                      width={180}
+                      rules={[{ required: true }]}
+                      placeholder="请输入按钮Key"
+                    />
+                  </ProForm.Group>
                 );
               }}
             </ProFormList>
@@ -343,31 +359,31 @@ export default ({ history }) => {
             <ProFormList name="filtrateList">
               {() => {
                 return (
-                  <>
+                  <ProForm.Group>
                     <ProFormSelect
                       name="valueType"
                       initialValue={'text'}
                       label="valueType"
-                      width="sm"
+                      width={120}
                       fieldProps={{
                         options: valueTypeOptions,
                       }}
                     />
-                    <ProForm.Group>
-                      <ProFormText
-                        name="title"
-                        label="title"
-                        width={180}
-                        rules={[{ required: true }]}
-                      />
-                      <ProFormText
-                        name="dataIndex"
-                        label="dataIndex"
-                        width={180}
-                        rules={[{ required: true }]}
-                      />
-                    </ProForm.Group>
-                  </>
+                    <ProFormText
+                      name="title"
+                      label="title"
+                      width={180}
+                      rules={[{ required: true }]}
+                      placeholder="请输入title"
+                    />
+                    <ProFormText
+                      name="dataIndex"
+                      label="dataIndex"
+                      width={180}
+                      rules={[{ required: true }]}
+                      placeholder="请输入dataIndex"
+                    />
+                  </ProForm.Group>
                 );
               }}
             </ProFormList>
@@ -376,39 +392,37 @@ export default ({ history }) => {
             <ProFormList name="tableList">
               {() => {
                 return (
-                  <>
-                    <ProForm.Group>
-                      <ProFormText
-                        name="title"
-                        label="title"
-                        width={180}
-                        rules={[{ required: true }]}
-                      />
-                      <ProFormText
-                        name="dataIndex"
-                        label="dataIndex"
-                        width={180}
-                        rules={[{ required: true }]}
-                      />
-                    </ProForm.Group>
-                    <ProForm.Group>
-                      <ProFormRadio.Group
-                        name="hasRender"
-                        initialValue={false}
-                        label="是否需要render函数"
-                        options={[
-                          {
-                            label: '是',
-                            value: true,
-                          },
-                          {
-                            label: '否',
-                            value: false,
-                          },
-                        ]}
-                      />
-                    </ProForm.Group>
-                  </>
+                  <ProForm.Group>
+                    <ProFormText
+                      name="title"
+                      label="title"
+                      width={180}
+                      rules={[{ required: true }]}
+                      placeholder="请输入title"
+                    />
+                    <ProFormText
+                      name="dataIndex"
+                      label="dataIndex"
+                      width={180}
+                      rules={[{ required: true }]}
+                      placeholder="请输入dataIndex"
+                    />
+                    <ProFormRadio.Group
+                      name="hasRender"
+                      initialValue={false}
+                      label="是否需要render函数"
+                      options={[
+                        {
+                          label: '是',
+                          value: true,
+                        },
+                        {
+                          label: '否',
+                          value: false,
+                        },
+                      ]}
+                    />
+                  </ProForm.Group>
                 );
               }}
             </ProFormList>
