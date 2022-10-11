@@ -48,7 +48,9 @@
   ],
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
+    "@ant-design/pro-card": "^2.0.10",
     "@ant-design/pro-components": "1.1.1",
+    "@ant-design/pro-table": "^3.0.11",
     "@umijs/route-utils": "^2.0.0",
     "ahooks": "^3.7.1",
     "antd": "^4.20.0",
