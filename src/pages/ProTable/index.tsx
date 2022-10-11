@@ -11,6 +11,7 @@ import {
   ProFormList,
   ProFormDependency,
   ProFormRadio,
+  ProFormDigit,
 } from '@ant-design/pro-components';
 import styles from './index.less';
 import { valueTypeOptions, buttonTypeOptions } from './constant';
@@ -61,16 +62,13 @@ export default ({ history }) => {
   };
 
   const handleToolBarCode = (list = []) => {
-    let toolBarCode = [
-      `       headerTitle = {${list.length === 0 ? '}' : ''}`,
-      ...((list?.length > 0 && [`           <Space>`]) || []),
-    ];
+    let toolBarCode = [`       headerTitle = {`, `           <Space>`];
     for (const item of list) {
       toolBarCode = toolBarCode.concat(
         handleToolBarItemCode(item?.buttonType, item?.buttonName, item?.buttonKey),
       );
     }
-    if (list.length > 0) toolBarCode = [...toolBarCode, `           </Space>`, `       }`];
+    toolBarCode = [...toolBarCode, `           </Space>`, `       }`];
     return toolBarCode;
   };
 
@@ -91,34 +89,48 @@ export default ({ history }) => {
     hasRender: boolean,
     isOperate: boolean,
     operateList = [],
+    width: number,
+    fieldProps = {},
   ) => {
     if (isOperate) {
       const operateItemCode = [];
       for (const operateItem of operateList) {
-        operateItemCode.push(
-          `            <Button key="${operateItem.buttonKey}" type="${operateItem.buttonType}" onClick={() => {}}>`,
-        );
+        operateItemCode.push(`            <a key="${operateItem.buttonKey}" onClick={() => {}}>`);
         operateItemCode.push(`               ${operateItem.buttonName}`);
-        operateItemCode.push(`            </Button>,`);
+        operateItemCode.push(`            </a>,`);
       }
       return [
         `      {`,
         `         title: '${title}',`,
         `         key: 'operate',`,
         `         align: 'center',`,
+        `         valueType: 'option',`,
+        ...((width && [`         width: ${width},`]) || []),
         `         render: ( _ , record ) => [`,
         ...operateItemCode,
         `         ],`,
         `      },`,
       ];
     } else {
+      const fieldPropsCode = [];
+      const fieldPropsKeys = Object.keys(fieldProps);
+      for (const fieldPropsKey of fieldPropsKeys) {
+        fieldPropsCode.push(`            ${fieldPropsKey}: ${fieldProps[fieldPropsKey]},`);
+      }
       return [
         `      {`,
         `         title: '${title}',`,
         `         dataIndex: '${dataIndex}',`,
         ...((valueType && [`         valueType: '${valueType}',`]) || []),
+        ...((width && [`         width: ${width},`]) || []),
         ...((hideInTable && [`         hideInTable: true,`]) || []),
         ...((hideInSearch && [`         hideInSearch: true,`]) || []),
+        ...((fieldPropsKeys.length > 0 && [
+          `         fieldProps: {`,
+          ...fieldPropsCode,
+          `         },`,
+        ]) ||
+          []),
         ...((hasRender && [`         render: ( _ , record ) => (record?.${dataIndex}),`]) || []),
         `      },`,
       ];
@@ -126,7 +138,7 @@ export default ({ history }) => {
   };
 
   const handleColumnCode = (list = []) => {
-    let columnsCode = [`   const columns = [${list.length === 0 ? ']' : ''}`];
+    let columnsCode = [`   const columns = [${list.length === 0 ? '];' : ''}`];
     for (const item of list) {
       columnsCode = columnsCode.concat(
         handleColumnItemCode(
@@ -138,10 +150,12 @@ export default ({ history }) => {
           item?.hasRender,
           item?.isOperate,
           item?.operateList,
+          item?.width,
+          item?.fieldProps,
         ),
       );
     }
-    if (list.length > 0) columnsCode.push('   ]');
+    if (list.length > 0) columnsCode.push('   ];');
     return columnsCode;
   };
 
@@ -164,7 +178,7 @@ export default ({ history }) => {
   };
 
   const handleDefaultDataCode = (list = []) => {
-    let defaultDataCode = [`const defaultData = [${list.length === 0 ? ']' : ''}`];
+    let defaultDataCode = [`const defaultData = [${list.length === 0 ? '];' : ''}`];
     for (const item of list) {
       const keys = Object.keys(item);
       defaultDataCode.push(`     {`);
@@ -173,7 +187,7 @@ export default ({ history }) => {
       }
       defaultDataCode.push(`     },`);
     }
-    if (list.length > 0) defaultDataCode.push(`]`);
+    if (list.length > 0) defaultDataCode.push(`];`);
     return defaultDataCode;
   };
 
@@ -216,7 +230,7 @@ export default ({ history }) => {
       ]) ||
         []),
       `       tableAlertRender={false}`,
-      `       request={async (value) => {return { data: defaultData }}}`,
+      `       request={async (values) => {return { data: defaultData }}}`,
       `       search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
       `       scroll={{ x: 'max-content' }}`,
       `       options={false}`,
@@ -307,6 +321,13 @@ export default ({ history }) => {
                 dataIndex: item?.dataIndex || '',
                 valueType: item?.valueType || 'text',
                 hideInTable: true,
+                ...(item?.maxLength
+                  ? {
+                      fieldProps: {
+                        maxLength: item.maxLength,
+                      },
+                    }
+                  : {}),
               };
               newColumns.push(column);
             }
@@ -320,12 +341,12 @@ export default ({ history }) => {
                   isOperate: true,
                   align: 'center',
                   key: 'operate',
+                  valueType: 'option',
+                  ...(item?.width ? { width: item?.width } : {}),
                   operateList: item?.operateList || [],
                   render: (_, record) => {
                     return (item?.operateList || []).map((operateItem) => (
-                      <Button key={operateItem.buttonKey} type={operateItem.buttonType}>
-                        {operateItem.buttonName}
-                      </Button>
+                      <a key={operateItem.buttonKey}>{operateItem.buttonName}</a>
                     ));
                   },
                 };
@@ -337,6 +358,7 @@ export default ({ history }) => {
                   dataIndex: item?.dataIndex || '',
                   hideInSearch: true,
                   hasRender: item?.hasRender,
+                  ...(item?.width ? { width: item?.width } : {}),
                 };
                 newColumns.push(column);
               }
@@ -477,6 +499,20 @@ export default ({ history }) => {
                       rules={[{ required: true }]}
                       placeholder="请输入dataIndex"
                     />
+                    <ProFormDependency name={['valueType']}>
+                      {({ valueType }) => {
+                        if (valueType === 'text') {
+                          return (
+                            <ProFormDigit
+                              label="最大长度"
+                              name="maxLength"
+                              width={180}
+                              placeholder="请输入最大长度"
+                            />
+                          );
+                        }
+                      }}
+                    </ProFormDependency>
                   </ProForm.Group>
                 );
               }}
@@ -528,10 +564,16 @@ export default ({ history }) => {
                           }
                         }}
                       </ProFormDependency>
+                      <ProFormDigit
+                        label="width"
+                        name="width"
+                        width={180}
+                        placeholder="请输入width"
+                      />
                       <ProFormRadio.Group
                         name="isOperate"
                         initialValue={false}
-                        label="是否是操作项"
+                        label="是否是操作栏"
                         options={[
                           {
                             label: '是',
@@ -544,6 +586,7 @@ export default ({ history }) => {
                         ]}
                       />
                     </ProForm.Group>
+
                     {/* <ProForm.Group>
                       <ProFormRadio.Group
                         name="hasRender"
@@ -567,7 +610,7 @@ export default ({ history }) => {
                           return (
                             <ProFormList
                               name="operateList"
-                              label="操作按钮配置"
+                              label="操作栏按钮配置"
                               creatorButtonProps={{
                                 creatorButtonText: '添加操作按钮',
                               }}
@@ -587,7 +630,7 @@ export default ({ history }) => {
                               }}
                             >
                               <ProForm.Group>
-                                <ProFormSelect
+                                {/* <ProFormSelect
                                   name="buttonType"
                                   initialValue={'default'}
                                   label="按钮类型"
@@ -596,7 +639,7 @@ export default ({ history }) => {
                                     options: buttonTypeOptions,
                                   }}
                                   placeholder="请输入按钮类型"
-                                />
+                                /> */}
                                 <ProFormText
                                   name="buttonName"
                                   label="按钮名称"
