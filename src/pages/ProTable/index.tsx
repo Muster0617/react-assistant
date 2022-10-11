@@ -16,6 +16,7 @@ import styles from './index.less';
 import { valueTypeOptions, buttonTypeOptions } from './constant';
 import { handleClipboard } from '@/utils/index';
 import lodash from 'lodash';
+import { useSize } from 'ahooks';
 
 const renderTextEllipsis = (text, textSize) => {
   if (text?.length >= textSize) {
@@ -35,9 +36,15 @@ export default ({ history }) => {
   const [defaultData, setDefaultData] = useState([]);
   const [toolBarList, setToolBarList] = useState([]);
   const [config, setConfig] = useState({});
+  const tableRef = useRef(null);
+  const size = useSize(tableRef);
 
   const formRef = useRef();
   const actionRef = useRef();
+
+  useEffect(() => {
+    console.log(size);
+  }, [size]);
 
   const handleCopes = (codes: string[]) => {
     return codes.join(`\r\n`);
@@ -221,7 +228,10 @@ export default ({ history }) => {
       `}`,
     ];
     return (
-      <div className={styles.code_container}>
+      <div
+        className={styles.code_container}
+        style={{ height: `calc(89vh - ${size?.height + 20}px)` }}
+      >
         <div>
           <Space style={{ display: 'flex', justifyContent: 'end' }}>
             <Button
@@ -249,35 +259,37 @@ export default ({ history }) => {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.table_container}>
-        <ProTable
-          actionRef={actionRef}
-          dataSource={defaultData}
-          columns={columns}
-          {...(config?.isSelect && {
-            rowSelection: {
-              onChange: (keys) => setSelectedRowKeys(keys),
-              selectedRowKeys,
-            },
-          })}
-          tableAlertRender={false}
-          search={{ defaultCollapsed: false, labelWidth: 'auto' }}
-          scroll={{ x: 'max-content' }}
-          options={false}
-          pagination={{ pageSize: 10 }}
-          rowKey="id"
-          {...(toolBarList?.length > 0 && {
-            headerTitle: (
-              <Space>
-                {toolBarList.map((item) => (
-                  <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
-                    {item.buttonName}
-                  </Button>
-                ))}
-              </Space>
-            ),
-          })}
-        />
+      <div className={styles.left}>
+        <div className={styles.table_container} ref={tableRef}>
+          <ProTable
+            actionRef={actionRef}
+            dataSource={defaultData}
+            columns={columns}
+            {...(config?.isSelect && {
+              rowSelection: {
+                onChange: (keys) => setSelectedRowKeys(keys),
+                selectedRowKeys,
+              },
+            })}
+            tableAlertRender={false}
+            search={{ defaultCollapsed: false, labelWidth: 'auto' }}
+            scroll={{ x: 'max-content' }}
+            options={false}
+            pagination={{ pageSize: 10 }}
+            rowKey="id"
+            {...(toolBarList?.length > 0 && {
+              headerTitle: (
+                <Space>
+                  {toolBarList.map((item) => (
+                    <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
+                      {item.buttonName}
+                    </Button>
+                  ))}
+                </Space>
+              ),
+            })}
+          />
+        </div>
         <div>{renderCodes()}</div>
       </div>
       <div className={styles.form_container}>

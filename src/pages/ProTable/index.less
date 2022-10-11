@@ -3,23 +3,34 @@
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
-  height: 100%;
+
+  .left {
+    width: 52%;
+    height: 89vh;
+    position: relative;
+  }
 
   .table_container {
-    width: 52%;
+    width: 100%;
   }
 
   .form_container {
     width: calc(48% - 20px);
-    height: 90vh;
-    padding: 20px;
+    height: 89vh;
     overflow-y: auto;
+    padding: 20px;
     background-color: #fff;
   }
 
   .code_container {
-    margin-top: 20px;
     padding: 20px;
     background-color: #fff;
+    // height: calc(89vh - 440px);
+    overflow-y: auto;
+    margin-top: 20px;
+    // position: absolute;
+    // bottom: 0px;
+    width: 100%;
+
   }
 }
