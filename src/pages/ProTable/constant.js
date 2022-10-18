@@ -1,4 +1,4 @@
-export const valueTypeOptions = [
+export const filterValueTypeOptions = [
   {
     label: '文本',
     value: 'text',
@@ -18,6 +18,17 @@ export const valueTypeOptions = [
   {
     label: '日期时间区间',
     value: 'dateTimeRange',
+  },
+];
+
+export const tableValueTypeOptions = [
+  {
+    label: 'text',
+    value: 'text',
+  },
+  {
+    label: 'index',
+    value: 'index',
   },
 ];
 

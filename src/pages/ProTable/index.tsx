@@ -4,20 +4,15 @@ import { ProTable } from '@ant-design/pro-components';
 import ProCard from '@ant-design/pro-card';
 import { Button, Space, Tooltip, Divider } from 'antd';
 import { useState, useRef, useEffect } from 'react';
-import {
-  ProForm,
-  ProFormSelect,
-  ProFormText,
-  ProFormList,
-  ProFormDependency,
-  ProFormRadio,
-  ProFormDigit,
-} from '@ant-design/pro-components';
+import { ProForm } from '@ant-design/pro-components';
 import styles from './index.less';
-import { valueTypeOptions, buttonTypeOptions } from './constant';
 import { handleClipboard } from '@/utils/index';
 import lodash from 'lodash';
 import { useSize } from 'ahooks';
+import TableListField from './TableListField';
+import FilterField from './FilterField';
+import ToolBarList from './ToolBarList';
+import ConfigField from './ConfigField';
 
 const renderTextEllipsis = (text, textSize) => {
   if (text?.length >= textSize) {
@@ -41,7 +36,6 @@ export default ({ history }) => {
   const size = useSize(tableRef);
 
   const formRef = useRef();
-  const actionRef = useRef();
 
   useEffect(() => {
     console.log(size);
@@ -114,13 +108,20 @@ export default ({ history }) => {
     } else {
       const fieldPropsCode = [];
       const fieldPropsKeys = Object.keys(fieldProps);
+      const isStringType = ['placeholder'];
       for (const fieldPropsKey of fieldPropsKeys) {
-        fieldPropsCode.push(`            ${fieldPropsKey}: ${fieldProps[fieldPropsKey]},`);
+        fieldPropsCode.push(
+          `            ${fieldPropsKey}: ${
+            isStringType.includes(fieldPropsKey)
+              ? `'${fieldProps[fieldPropsKey]}'`
+              : fieldProps[fieldPropsKey]
+          },`,
+        );
       }
       return [
         `      {`,
         `         title: '${title}',`,
-        `         dataIndex: '${dataIndex}',`,
+        ...((dataIndex && [`         dataIndex: ${dataIndex},`]) || []),
         ...((valueType && [`         valueType: '${valueType}',`]) || []),
         ...((width && [`         width: ${width},`]) || []),
         ...((hideInTable && [`         hideInTable: true,`]) || []),
@@ -162,7 +163,7 @@ export default ({ history }) => {
   const handleDefaultData = (tableKeys = []) => {
     if (tableKeys.length > 0) {
       let newDefaultData = [];
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 2; i++) {
         let data = {};
         data.id = i + 1;
         for (const key of tableKeys) {
@@ -221,6 +222,7 @@ export default ({ history }) => {
       `   return (`,
       `     <ProTable`,
       `       actionRef={actionRef}`,
+      `       form={{ syncToUrl: true }}`,
       `       columns={columns}`,
       ...((config?.isSelect && [
         `       rowSelection={{`,
@@ -230,7 +232,9 @@ export default ({ history }) => {
       ]) ||
         []),
       `       tableAlertRender={false}`,
-      `       request={async (values) => {return { data: defaultData }}}`,
+      `       request={async (values) => {`,
+      `         return { data: defaultData }`,
+      `       }}`,
       `       search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
       `       scroll={{ x: 'max-content' }}`,
       `       options={false}`,
@@ -271,401 +275,127 @@ export default ({ history }) => {
     );
   };
 
+  const handleFormFinish = (values) => {
+    console.log(values);
+    const { filterList = [], tableList = [], config = {} } = values;
+    const newColumns = [];
+    const operateColumn = [];
+    for (const item of filterList) {
+      const column = {
+        title: item?.title || '',
+        dataIndex: item?.dataIndex || '',
+        valueType: item?.valueType || 'text',
+        hideInTable: true,
+        fieldProps: {
+          ...(item?.maxLength ? { maxLength: item.maxLength } : {}),
+          ...(item?.placeholder ? { placeholder: item.placeholder } : {}),
+        },
+      };
+      newColumns.push(column);
+    }
+    let tableKeys = [];
+    for (const item of tableList) {
+      let column = {};
+      if (item.isOperate) {
+        column = {
+          title: item.title,
+          hideInSearch: true,
+          isOperate: true,
+          align: 'center',
+          key: 'operate',
+          valueType: 'option',
+          ...(item?.width ? { width: item?.width } : {}),
+          operateList: item?.operateList || [],
+          render: (_, record) => {
+            return (item?.operateList || []).map((operateItem) => (
+              <a key={operateItem.buttonKey}>{operateItem.buttonName}</a>
+            ));
+          },
+        };
+        operateColumn.push(column);
+      } else {
+        tableKeys.push(item?.dataIndex);
+        column = {
+          title: item?.title || '',
+          dataIndex: item?.dataIndex || '',
+          valueType: item?.valueType || '',
+          hideInSearch: true,
+          hasRender: item?.hasRender,
+          ...(item?.width ? { width: item?.width } : {}),
+        };
+        newColumns.push(column);
+      }
+    }
+    handleDefaultData(tableKeys);
+    setColumns([...newColumns, ...operateColumn]);
+    setToolBarList(values?.toolBarList || []);
+    setConfig(config);
+  };
+
   return (
     <div className={styles.wrapper}>
-      <div className={styles.left}>
-        <div className={styles.table_container} ref={tableRef}>
-          <ProTable
-            actionRef={actionRef}
-            dataSource={defaultData}
-            columns={columns}
-            {...(config?.isSelect && {
-              rowSelection: {
-                onChange: (keys) => setSelectedRowKeys(keys),
-                selectedRowKeys,
-              },
-            })}
-            tableAlertRender={false}
-            search={{ defaultCollapsed: false, labelWidth: 'auto' }}
-            scroll={{ x: 'max-content' }}
-            options={false}
-            pagination={{ pageSize: 10 }}
-            rowKey="id"
-            {...(toolBarList?.length > 0 && {
-              headerTitle: (
-                <Space>
-                  {toolBarList.map((item) => (
-                    <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
-                      {item.buttonName}
-                    </Button>
-                  ))}
-                </Space>
-              ),
-            })}
-          />
-        </div>
-        <div>{renderCodes()}</div>
+      <div className={styles.container_top} ref={tableRef}>
+        <ProTable
+          dataSource={defaultData}
+          columns={columns}
+          {...(config?.isSelect && {
+            rowSelection: {
+              onChange: (keys) => setSelectedRowKeys(keys),
+              selectedRowKeys,
+            },
+          })}
+          tableAlertRender={false}
+          search={{ defaultCollapsed: false, labelWidth: 'auto' }}
+          scroll={{ x: 'max-content' }}
+          options={false}
+          pagination={{ pageSize: 10 }}
+          rowKey="id"
+          {...(toolBarList?.length > 0 && {
+            headerTitle: (
+              <Space>
+                {toolBarList.map((item) => (
+                  <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
+                    {item.buttonName}
+                  </Button>
+                ))}
+              </Space>
+            ),
+          })}
+        />
       </div>
-      <div className={styles.form_container}>
-        <ProForm
-          formRef={formRef}
-          autoFocusFirstInput
-          onFinish={(values) => {
-            console.log(values);
-            const { filtrateList = [], tableList = [], config = {} } = values;
-            const newColumns = [];
-            const operateColumn = [];
-            for (const item of filtrateList) {
-              const column = {
-                title: item?.title || '',
-                dataIndex: item?.dataIndex || '',
-                valueType: item?.valueType || 'text',
-                hideInTable: true,
-                ...(item?.maxLength
-                  ? {
-                      fieldProps: {
-                        maxLength: item.maxLength,
-                      },
-                    }
-                  : {}),
-              };
-              newColumns.push(column);
-            }
-            let tableKeys = [];
-            for (const item of tableList) {
-              let column = {};
-              if (item.isOperate) {
-                column = {
-                  title: item.title,
-                  hideInSearch: true,
-                  isOperate: true,
-                  align: 'center',
-                  key: 'operate',
-                  valueType: 'option',
-                  ...(item?.width ? { width: item?.width } : {}),
-                  operateList: item?.operateList || [],
-                  render: (_, record) => {
-                    return (item?.operateList || []).map((operateItem) => (
-                      <a key={operateItem.buttonKey}>{operateItem.buttonName}</a>
-                    ));
-                  },
-                };
-                operateColumn.push(column);
-              } else {
-                tableKeys.push(item?.dataIndex);
-                column = {
-                  title: item?.title || '',
-                  dataIndex: item?.dataIndex || '',
-                  hideInSearch: true,
-                  hasRender: item?.hasRender,
-                  ...(item?.width ? { width: item?.width } : {}),
-                };
-                newColumns.push(column);
-              }
-            }
-            handleDefaultData(tableKeys);
-            setColumns([...newColumns, ...operateColumn]);
-            setToolBarList(values?.toolBarList || []);
-            setConfig(config);
-          }}
-          submitter={{
-            searchConfig: {
-              resetText: '重置',
-              submitText: '生成表格',
-            },
-            onReset: () => {
-              console.log('setToolBarList');
-              setColumns([]);
-              setSelectedRowKeys([]);
-              setDefaultData([]);
-              setToolBarList([]);
-              setConfig({});
-            },
-          }}
+      <div
+        className={styles.container_bottom}
+        style={{ height: `calc(89vh - ${size?.height + 20}px)` }}
+      >
+        <div
+          className={styles.form_container}
+          style={{ height: `calc(89vh - ${size?.height + 20}px)` }}
         >
-          <ProForm.Group title="表格配置">
-            <ProFormRadio.Group
-              name="isSelect"
-              initialValue={false}
-              label="是否可多选"
-              options={[
-                {
-                  label: '是',
-                  value: true,
-                },
-                {
-                  label: '否',
-                  value: false,
-                },
-              ]}
-              transform={(value) => ({ config: { isSelect: value } })}
-            />
-          </ProForm.Group>
-          <ProForm.Group title="工具栏按钮配置">
-            <ProFormList
-              name="toolBarList"
-              creatorButtonProps={{
-                creatorButtonText: '添加工具栏按钮',
-              }}
-              itemRender={({ listDom, action }, { record }) => {
-                return (
-                  <ProCard
-                    bordered
-                    extra={action}
-                    style={{
-                      marginBlockEnd: 8,
-                    }}
-                  >
-                    {listDom}
-                  </ProCard>
-                );
-              }}
-            >
-              {() => {
-                return (
-                  <ProForm.Group>
-                    <ProFormSelect
-                      name="buttonType"
-                      initialValue={'default'}
-                      label="按钮类型"
-                      width={120}
-                      fieldProps={{
-                        options: buttonTypeOptions,
-                      }}
-                      placeholder="请输入按钮类型"
-                    />
-                    <ProFormText
-                      name="buttonName"
-                      label="按钮名称"
-                      width={180}
-                      rules={[{ required: true }]}
-                      placeholder="请输入按钮名称"
-                    />
-                    <ProFormText
-                      name="buttonKey"
-                      label="按钮Key"
-                      width={180}
-                      rules={[{ required: true }]}
-                      placeholder="请输入按钮Key"
-                    />
-                  </ProForm.Group>
-                );
-              }}
-            </ProFormList>
-          </ProForm.Group>
-          <ProForm.Group title="筛选项配置">
-            <ProFormList
-              name="filtrateList"
-              creatorButtonProps={{
-                creatorButtonText: '添加筛选项',
-              }}
-              itemRender={({ listDom, action }, { record }) => {
-                return (
-                  <ProCard
-                    bordered
-                    extra={action}
-                    style={{
-                      marginBlockEnd: 8,
-                    }}
-                  >
-                    {listDom}
-                  </ProCard>
-                );
-              }}
-            >
-              {() => {
-                return (
-                  <ProForm.Group>
-                    <ProFormSelect
-                      name="valueType"
-                      initialValue={'text'}
-                      label="valueType"
-                      width={120}
-                      fieldProps={{
-                        options: valueTypeOptions,
-                      }}
-                    />
-                    <ProFormText
-                      name="title"
-                      label="title"
-                      width={180}
-                      rules={[{ required: true }]}
-                      placeholder="请输入title"
-                    />
-                    <ProFormText
-                      name="dataIndex"
-                      label="dataIndex"
-                      width={180}
-                      rules={[{ required: true }]}
-                      placeholder="请输入dataIndex"
-                    />
-                    <ProFormDependency name={['valueType']}>
-                      {({ valueType }) => {
-                        if (valueType === 'text') {
-                          return (
-                            <ProFormDigit
-                              label="最大长度"
-                              name="maxLength"
-                              width={180}
-                              placeholder="请输入最大长度"
-                            />
-                          );
-                        }
-                      }}
-                    </ProFormDependency>
-                  </ProForm.Group>
-                );
-              }}
-            </ProFormList>
-          </ProForm.Group>
-          <ProForm.Group title="表格项配置">
-            <ProFormList
-              name="tableList"
-              creatorButtonProps={{
-                creatorButtonText: '添加表格项',
-              }}
-              itemRender={({ listDom, action }, { record }) => {
-                return (
-                  <ProCard
-                    bordered
-                    extra={action}
-                    style={{
-                      marginBlockEnd: 8,
-                    }}
-                  >
-                    {listDom}
-                  </ProCard>
-                );
-              }}
-            >
-              {() => {
-                return (
-                  <>
-                    <ProForm.Group>
-                      <ProFormText
-                        name="title"
-                        label="title"
-                        width={180}
-                        rules={[{ required: true }]}
-                        placeholder="请输入title"
-                      />
-                      <ProFormDependency name={['isOperate']}>
-                        {({ isOperate }) => {
-                          if (!isOperate) {
-                            return (
-                              <ProFormText
-                                name="dataIndex"
-                                label="dataIndex"
-                                width={180}
-                                rules={[{ required: true }]}
-                                placeholder="请输入dataIndex"
-                              />
-                            );
-                          }
-                        }}
-                      </ProFormDependency>
-                      <ProFormDigit
-                        label="width"
-                        name="width"
-                        width={180}
-                        placeholder="请输入width"
-                      />
-                      <ProFormRadio.Group
-                        name="isOperate"
-                        initialValue={false}
-                        label="是否是操作栏"
-                        options={[
-                          {
-                            label: '是',
-                            value: true,
-                          },
-                          {
-                            label: '否',
-                            value: false,
-                          },
-                        ]}
-                      />
-                    </ProForm.Group>
-
-                    {/* <ProForm.Group>
-                      <ProFormRadio.Group
-                        name="hasRender"
-                        initialValue={false}
-                        label="是否需要render函数"
-                        options={[
-                          {
-                            label: '是',
-                            value: true,
-                          },
-                          {
-                            label: '否',
-                            value: false,
-                          },
-                        ]}
-                      />
-                    </ProForm.Group> */}
-                    <ProFormDependency name={['isOperate']}>
-                      {({ isOperate }) => {
-                        if (isOperate) {
-                          return (
-                            <ProFormList
-                              name="operateList"
-                              label="操作栏按钮配置"
-                              creatorButtonProps={{
-                                creatorButtonText: '添加操作按钮',
-                              }}
-                              rules={[{ required: true, message: '请配置操作按钮' }]}
-                              itemRender={({ listDom, action }, { record }) => {
-                                return (
-                                  <ProCard
-                                    bordered
-                                    extra={action}
-                                    style={{
-                                      marginBlockEnd: 8,
-                                    }}
-                                  >
-                                    {listDom}
-                                  </ProCard>
-                                );
-                              }}
-                            >
-                              <ProForm.Group>
-                                {/* <ProFormSelect
-                                  name="buttonType"
-                                  initialValue={'default'}
-                                  label="按钮类型"
-                                  width={120}
-                                  fieldProps={{
-                                    options: buttonTypeOptions,
-                                  }}
-                                  placeholder="请输入按钮类型"
-                                /> */}
-                                <ProFormText
-                                  name="buttonName"
-                                  label="按钮名称"
-                                  width={180}
-                                  rules={[{ required: true }]}
-                                  placeholder="请输入按钮名称"
-                                />
-                                <ProFormText
-                                  name="buttonKey"
-                                  label="按钮Key"
-                                  width={180}
-                                  rules={[{ required: true }]}
-                                  placeholder="请输入按钮Key"
-                                />
-                              </ProForm.Group>
-                            </ProFormList>
-                          );
-                        }
-                      }}
-                    </ProFormDependency>
-                  </>
-                );
-              }}
-            </ProFormList>
-          </ProForm.Group>
-        </ProForm>
+          <ProForm
+            formRef={formRef}
+            autoFocusFirstInput
+            onFinish={handleFormFinish}
+            submitter={{
+              searchConfig: {
+                resetText: '重置',
+                submitText: '生成表格',
+              },
+              onReset: () => {
+                setColumns([]);
+                setSelectedRowKeys([]);
+                setDefaultData([]);
+                setToolBarList([]);
+                setConfig({});
+              },
+            }}
+          >
+            <ConfigField />
+            <ToolBarList />
+            <FilterField />
+            <TableListField />
+          </ProForm>
+        </div>
+        {renderCodes()}
       </div>
     </div>
   );
