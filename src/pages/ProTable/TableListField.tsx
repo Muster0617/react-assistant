@@ -13,7 +13,7 @@ import { Space } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { useRef } from 'react';
 
-export default () => {
+export default ({ formRef }) => {
   const actionRef = useRef();
   const operateListActionRef = useRef();
 
@@ -55,7 +55,7 @@ export default () => {
           );
         }}
       >
-        {() => {
+        {(f, index) => {
           return (
             <>
               <ProForm.Group>
@@ -70,6 +70,13 @@ export default () => {
                           width={120}
                           fieldProps={{
                             options: tableValueTypeOptions,
+                            onChange: (value) => {
+                              if (value === 'index') {
+                                const tableList = formRef.current?.getFieldValue('tableList');
+                                tableList[index].title = '序号';
+                                formRef.current?.setFieldsValue({ tableList });
+                              }
+                            },
                           }}
                         />
                       );
@@ -83,6 +90,7 @@ export default () => {
                   rules={[{ required: true }]}
                   placeholder="请输入title"
                 />
+
                 <ProFormDependency name={['isOperate', 'valueType']}>
                   {({ isOperate, valueType }) => {
                     if (!isOperate && ['text'].includes(valueType)) {
@@ -113,6 +121,15 @@ export default () => {
                       value: false,
                     },
                   ]}
+                  fieldProps={{
+                    onChange: (value) => {
+                      if (value) {
+                        const tableList = formRef.current?.getFieldValue('tableList');
+                        tableList[index].title = '操作';
+                        formRef.current?.setFieldsValue({ tableList });
+                      }
+                    },
+                  }}
                 />
               </ProForm.Group>
 

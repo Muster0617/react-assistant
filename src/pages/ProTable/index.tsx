@@ -1,7 +1,6 @@
 /* eslint-disable */
 
 import { ProTable } from '@ant-design/pro-components';
-import ProCard from '@ant-design/pro-card';
 import { Button, Space, Tooltip, Divider } from 'antd';
 import { useState, useRef, useEffect } from 'react';
 import { ProForm } from '@ant-design/pro-components';
@@ -24,6 +23,16 @@ const renderTextEllipsis = (text, textSize) => {
   } else {
     return <span>{text}</span>;
   }
+};
+
+const getTableData = () => {
+  return Promise.resolve({
+    success: true,
+    data: {
+      records: [],
+      total: 2,
+    },
+  });
 };
 
 export default ({ history }) => {
@@ -121,7 +130,7 @@ export default ({ history }) => {
       return [
         `      {`,
         `         title: '${title}',`,
-        ...((dataIndex && [`         dataIndex: ${dataIndex},`]) || []),
+        ...((dataIndex && [`         dataIndex: '${dataIndex}',`]) || []),
         ...((valueType && [`         valueType: '${valueType}',`]) || []),
         ...((width && [`         width: ${width},`]) || []),
         ...((hideInTable && [`         hideInTable: true,`]) || []),
@@ -167,11 +176,12 @@ export default ({ history }) => {
         let data = {};
         data.id = i + 1;
         for (const key of tableKeys) {
-          data[key] = '模拟数据';
+          if (key) {
+            data[key] = '模拟数据';
+          }
         }
         newDefaultData.push(data);
       }
-      console.log(newDefaultData, 'newDefaultData');
       setDefaultData(newDefaultData);
     } else {
       setDefaultData([]);
@@ -179,16 +189,30 @@ export default ({ history }) => {
   };
 
   const handleDefaultDataCode = (list = []) => {
-    let defaultDataCode = [`const defaultData = [${list.length === 0 ? '];' : ''}`];
+    let defaultDataCode = [
+      'const getTableData = () => {',
+      `   return Promise.resolve({`,
+      `      success: true,`,
+      `      data: {`,
+      `        records: [${list?.length > 0 ? '' : '],'}`,
+    ];
     for (const item of list) {
       const keys = Object.keys(item);
-      defaultDataCode.push(`     {`);
+      defaultDataCode.push(`           {`);
       for (const key of keys) {
-        defaultDataCode.push(`      ${key}: "${item[key]}",`);
+        defaultDataCode.push(`              ${key}: "${item[key]}",`);
       }
-      defaultDataCode.push(`     },`);
+      defaultDataCode.push(`           },`);
     }
-    if (list.length > 0) defaultDataCode.push(`];`);
+    if (list.length > 0) {
+      defaultDataCode.push(`        ],`);
+    }
+    defaultDataCode = defaultDataCode.concat([
+      `        total:${list.length}`,
+      '      }',
+      '   })',
+      '}',
+    ]);
     return defaultDataCode;
   };
 
@@ -214,15 +238,14 @@ export default ({ history }) => {
       ]) ||
         []),
       `   const actionRef = useRef();`,
-      toolBarFuncCode.length > 0 && ` `,
+      ...(toolBarFuncCode.length > 0 ? [` `] : []),
       ...toolBarFuncCode,
-      (columnsCode.length > 1 || toolBarFuncCode.length > 0) && ` `,
+      ...(columnsCode.length > 1 || toolBarFuncCode.length > 0 ? [` `] : []),
       ...columnsCode,
       ` `,
       `   return (`,
       `     <ProTable`,
       `       actionRef={actionRef}`,
-      `       form={{ syncToUrl: true }}`,
       `       columns={columns}`,
       ...((config?.isSelect && [
         `       rowSelection={{`,
@@ -233,7 +256,14 @@ export default ({ history }) => {
         []),
       `       tableAlertRender={false}`,
       `       request={async (values) => {`,
-      `         return { data: defaultData }`,
+      `         const response = await getTableData(values)`,
+      `         if(response?.success){`,
+      `           return {`,
+      `             data: response?.data?.records || [],`,
+      `             total: response?.data?.total,`,
+      `             success: true`,
+      `           }`,
+      `         }`,
       `       }}`,
       `       search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
       `       scroll={{ x: 'max-content' }}`,
@@ -245,6 +275,7 @@ export default ({ history }) => {
       `   )`,
       `}`,
     ];
+    console.log(codes, 'codes');
     return (
       <div
         className={styles.code_container}
@@ -392,7 +423,7 @@ export default ({ history }) => {
             <ConfigField />
             <ToolBarList />
             <FilterField />
-            <TableListField />
+            <TableListField formRef={formRef} />
           </ProForm>
         </div>
         {renderCodes()}
