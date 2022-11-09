@@ -2,7 +2,7 @@
 
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Space, Tooltip, Divider } from 'antd';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { ProForm } from '@ant-design/pro-components';
 import styles from './index.less';
 import { handleClipboard } from '@/utils/index';
@@ -12,6 +12,8 @@ import TableListField from './TableListField';
 import FilterField from './FilterField';
 import ToolBarList from './ToolBarList';
 import ConfigField from './ConfigField';
+import { useModel } from 'umi';
+import { useFocusWithin } from 'ahooks';
 
 const renderTextEllipsis = (text, textSize) => {
   if (text?.length >= textSize) {
@@ -25,16 +27,6 @@ const renderTextEllipsis = (text, textSize) => {
   }
 };
 
-const getTableData = () => {
-  return Promise.resolve({
-    success: true,
-    data: {
-      records: [],
-      total: 2,
-    },
-  });
-};
-
 export default ({ history }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -43,12 +35,18 @@ export default ({ history }) => {
   const [config, setConfig] = useState({});
   const tableRef = useRef(null);
   const size = useSize(tableRef);
-
+  const { initialState, setInitialState } = useModel('@@initialState');
   const formRef = useRef();
+  const wrapRef = useRef(null);
 
-  useEffect(() => {
-    console.log(size);
-  }, [size]);
+  const isFocusWithin = useFocusWithin(wrapRef, {
+    // 点击页面按钮关闭左侧导航栏
+    onFocus: () => {
+      if (!initialState?.collapsed) {
+        setInitialState({ ...initialState, collapsed: true });
+      }
+    },
+  });
 
   const handleCopes = (codes: string[]) => {
     return codes.join(`\r\n`);
@@ -56,29 +54,29 @@ export default ({ history }) => {
 
   const handleToolBarItemCode = (buttonType: string, buttonName: string, buttonKey: string) => {
     return [
-      `              <Button key="${buttonKey}" type="${buttonType}" onClick={handle${lodash.upperFirst(
+      `             <Button key="${buttonKey}" type="${buttonType}" onClick={handle${lodash.upperFirst(
         buttonKey,
       )}Tool}>`,
-      `                 ${buttonName}`,
-      `              </Button>`,
+      `                ${buttonName}`,
+      `             </Button>`,
     ];
   };
 
   const handleToolBarCode = (list = []) => {
-    let toolBarCode = [`       headerTitle = {`, `           <Space>`];
+    let toolBarCode = [`      headerTitle = {`, `           <Space>`];
     for (const item of list) {
       toolBarCode = toolBarCode.concat(
         handleToolBarItemCode(item?.buttonType, item?.buttonName, item?.buttonKey),
       );
     }
-    toolBarCode = [...toolBarCode, `           </Space>`, `       }`];
+    toolBarCode = [...toolBarCode, `          </Space>`, `       }`];
     return toolBarCode;
   };
 
   const handleToolBarFuncCode = (list = []) => {
     let toolBarFuncCode = [];
     for (const item of list) {
-      toolBarFuncCode.push(`   const handle${lodash.upperFirst(item?.buttonKey)}Tool = () => {}`);
+      toolBarFuncCode.push(`  const handle${lodash.upperFirst(item?.buttonKey)}Tool = () => {}`);
     }
     return toolBarFuncCode;
   };
@@ -98,21 +96,21 @@ export default ({ history }) => {
     if (isOperate) {
       const operateItemCode = [];
       for (const operateItem of operateList) {
-        operateItemCode.push(`            <a key="${operateItem.buttonKey}" onClick={() => {}}>`);
-        operateItemCode.push(`               ${operateItem.buttonName}`);
-        operateItemCode.push(`            </a>,`);
+        operateItemCode.push(`           <a key="${operateItem.buttonKey}" onClick={() => {}}>`);
+        operateItemCode.push(`              ${operateItem.buttonName}`);
+        operateItemCode.push(`           </a>,`);
       }
       return [
-        `      {`,
-        `         title: '${title}',`,
-        `         key: 'operate',`,
-        `         align: 'center',`,
-        `         valueType: 'option',`,
-        ...((width && [`         width: ${width},`]) || []),
-        `         render: ( _ , record ) => [`,
+        `     {`,
+        `        title: '${title}',`,
+        `        key: 'operate',`,
+        `        align: 'center',`,
+        `        valueType: 'option',`,
+        ...((width && [`        width: ${width},`]) || []),
+        `        render: ( _ , record ) => [`,
         ...operateItemCode,
-        `         ],`,
-        `      },`,
+        `        ],`,
+        `     },`,
       ];
     } else {
       const fieldPropsCode = [];
@@ -128,27 +126,27 @@ export default ({ history }) => {
         );
       }
       return [
-        `      {`,
-        `         title: '${title}',`,
-        ...((dataIndex && [`         dataIndex: '${dataIndex}',`]) || []),
-        ...((valueType && [`         valueType: '${valueType}',`]) || []),
-        ...((width && [`         width: ${width},`]) || []),
-        ...((hideInTable && [`         hideInTable: true,`]) || []),
-        ...((hideInSearch && [`         hideInSearch: true,`]) || []),
+        `     {`,
+        `        title: '${title}',`,
+        ...((dataIndex && [`        dataIndex: '${dataIndex}',`]) || []),
+        ...((valueType && [`        valueType: '${valueType}',`]) || []),
+        ...((width && [`        width: ${width},`]) || []),
+        ...((hideInTable && [`        hideInTable: true,`]) || []),
+        ...((hideInSearch && [`       hideInSearch: true,`]) || []),
         ...((fieldPropsKeys.length > 0 && [
-          `         fieldProps: {`,
+          `        fieldProps: {`,
           ...fieldPropsCode,
-          `         },`,
+          `        },`,
         ]) ||
           []),
-        ...((hasRender && [`         render: ( _ , record ) => (record?.${dataIndex}),`]) || []),
-        `      },`,
+        ...((hasRender && [`        render: ( _ , record ) => (record?.${dataIndex}),`]) || []),
+        `     },`,
       ];
     }
   };
 
   const handleColumnCode = (list = []) => {
-    let columnsCode = [`   const columns = [${list.length === 0 ? '];' : ''}`];
+    let columnsCode = [`  const columns = [${list.length === 0 ? '];' : ''}`];
     for (const item of list) {
       columnsCode = columnsCode.concat(
         handleColumnItemCode(
@@ -191,32 +189,27 @@ export default ({ history }) => {
   const handleDefaultDataCode = (list = []) => {
     let defaultDataCode = [
       'const getTableData = () => {',
-      `   return Promise.resolve({`,
-      `      success: true,`,
-      `      data: {`,
-      `        records: [${list?.length > 0 ? '' : '],'}`,
+      `  return Promise.resolve({`,
+      `    success: true,`,
+      `    data: {`,
+      `      records: [${list?.length > 0 ? '' : '],'}`,
     ];
     for (const item of list) {
       const keys = Object.keys(item);
-      defaultDataCode.push(`           {`);
+      defaultDataCode.push(`          {`);
       for (const key of keys) {
-        defaultDataCode.push(`              ${key}: "${item[key]}",`);
+        defaultDataCode.push(`            ${key}: "${item[key]}",`);
       }
-      defaultDataCode.push(`           },`);
+      defaultDataCode.push(`          },`);
     }
     if (list.length > 0) {
-      defaultDataCode.push(`        ],`);
+      defaultDataCode.push(`     ],`);
     }
-    defaultDataCode = defaultDataCode.concat([
-      `        total:${list.length}`,
-      '      }',
-      '   })',
-      '}',
-    ]);
+    defaultDataCode = defaultDataCode.concat([`      total: ${list.length}`, '    }', '  })', '}']);
     return defaultDataCode;
   };
 
-  const renderCodes = () => {
+  const codes = useMemo(() => {
     let defaultDataCode = handleDefaultDataCode(defaultData);
     // ----------
     let columnsCode = handleColumnCode(columns);
@@ -225,7 +218,7 @@ export default ({ history }) => {
     // ----------
     const toolBarFuncCode = toolBarList?.length > 0 ? handleToolBarFuncCode(toolBarList) : [];
 
-    const codes = [
+    return [
       `import ProTable from '@ant-design/pro-table'`,
       `import { Button, Space, Tooltip } from 'antd';`,
       `import { useState, useRef, useEffect } from 'react';`,
@@ -233,81 +226,49 @@ export default ({ history }) => {
       ...defaultDataCode,
       ` `,
       `export default ({ history }) => {`,
-      ...((config?.isSelect && [
-        `   const [selectedRowKeys, setSelectedRowKeys] = useState([]);`,
-      ]) ||
+      ...((config?.isSelect && [`  const [selectedRowKeys, setSelectedRowKeys] = useState([]);`]) ||
         []),
-      `   const actionRef = useRef();`,
+      `  const actionRef = useRef();`,
       ...(toolBarFuncCode.length > 0 ? [` `] : []),
       ...toolBarFuncCode,
       ...(columnsCode.length > 1 || toolBarFuncCode.length > 0 ? [` `] : []),
       ...columnsCode,
       ` `,
-      `   return (`,
-      `     <ProTable`,
-      `       actionRef={actionRef}`,
-      `       columns={columns}`,
+      `  return (`,
+      `    <ProTable`,
+      `      actionRef={actionRef}`,
+      `      columns={columns}`,
       ...((config?.isSelect && [
-        `       rowSelection={{`,
-        `         onChange: (keys) => setSelectedRowKeys(keys),`,
-        `         selectedRowKeys,`,
-        `       }}`,
+        `      rowSelection={{`,
+        `        onChange: (keys) => setSelectedRowKeys(keys),`,
+        `        selectedRowKeys,`,
+        `      }}`,
       ]) ||
         []),
-      `       tableAlertRender={false}`,
-      `       request={async (values) => {`,
-      `         const response = await getTableData(values)`,
-      `         if(response?.success){`,
-      `           return {`,
-      `             data: response?.data?.records || [],`,
-      `             total: response?.data?.total,`,
-      `             success: true`,
-      `           }`,
-      `         }`,
-      `       }}`,
-      `       search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
-      `       scroll={{ x: 'max-content' }}`,
-      `       options={false}`,
-      `       pagination={{ pageSize: 10 }}`,
-      `       rowKey="id"`,
+      `      tableAlertRender={false}`,
+      `      request={async (values) => {`,
+      `        const response = await getTableData(values)`,
+      `        if( response?.success ) {`,
+      `          return {`,
+      `            data: response?.data?.records || [],`,
+      `            total: response?.data?.total,`,
+      `            success: true`,
+      `          }`,
+      `        }`,
+      `      }}`,
+      `      search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
+      `      scroll={{ x: 'max-content' }}`,
+      `      options={false}`,
+      `      pagination={{ pageSize: 10 }}`,
+      `      rowKey="id"`,
       ...toolBarCode,
-      `     />`,
-      `   )`,
+      `    />`,
+      `  )`,
       `}`,
     ];
-    console.log(codes, 'codes');
-    return (
-      <div
-        className={styles.code_container}
-        style={{ height: `calc(89vh - ${size?.height + 20}px)` }}
-      >
-        <div>
-          <Space style={{ display: 'flex', justifyContent: 'end' }}>
-            <Button
-              className="code-copy"
-              type="link"
-              onClick={() => handleClipboard('.code-copy', handleCopes(codes))}
-            >
-              复制
-            </Button>
-          </Space>
-        </div>
-        <div>
-          <h2>代码：</h2>
-          <code>
-            <pre>
-              {codes.map((code: string, index: number) => (
-                <p key={index}>{code}</p>
-              ))}
-            </pre>
-          </code>
-        </div>
-      </div>
-    );
-  };
+  }, [config, defaultData, columns, toolBarList]);
 
   const handleFormFinish = (values) => {
-    console.log(values);
     const { filterList = [], tableList = [], config = {} } = values;
     const newColumns = [];
     const operateColumn = [];
@@ -364,69 +325,88 @@ export default ({ history }) => {
   };
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container_top} ref={tableRef}>
-        <ProTable
-          dataSource={defaultData}
-          columns={columns}
-          {...(config?.isSelect && {
-            rowSelection: {
-              onChange: (keys) => setSelectedRowKeys(keys),
-              selectedRowKeys,
-            },
-          })}
-          tableAlertRender={false}
-          search={{ defaultCollapsed: false, labelWidth: 'auto' }}
-          scroll={{ x: 'max-content' }}
-          options={false}
-          pagination={{ pageSize: 10 }}
-          rowKey="id"
-          {...(toolBarList?.length > 0 && {
-            headerTitle: (
-              <Space>
-                {toolBarList.map((item) => (
-                  <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
-                    {item.buttonName}
-                  </Button>
-                ))}
-              </Space>
-            ),
-          })}
-        />
-      </div>
-      <div
-        className={styles.container_bottom}
-        style={{ height: `calc(89vh - ${size?.height + 20}px)` }}
-      >
-        <div
-          className={styles.form_container}
-          style={{ height: `calc(89vh - ${size?.height + 20}px)` }}
-        >
-          <ProForm
-            formRef={formRef}
-            autoFocusFirstInput
-            onFinish={handleFormFinish}
-            submitter={{
-              searchConfig: {
-                resetText: '重置',
-                submitText: '生成表格',
+    <div className={styles.wrapper} ref={wrapRef}>
+      <div className={styles.container_left}>
+        <div ref={tableRef}>
+          <ProTable
+            dataSource={defaultData}
+            columns={columns}
+            {...(config?.isSelect && {
+              rowSelection: {
+                onChange: (keys) => setSelectedRowKeys(keys),
+                selectedRowKeys,
               },
-              onReset: () => {
-                setColumns([]);
-                setSelectedRowKeys([]);
-                setDefaultData([]);
-                setToolBarList([]);
-                setConfig({});
-              },
-            }}
-          >
-            <ConfigField />
-            <ToolBarList />
-            <FilterField />
-            <TableListField formRef={formRef} />
-          </ProForm>
+            })}
+            tableAlertRender={false}
+            search={{ defaultCollapsed: false, labelWidth: 'auto' }}
+            scroll={{ x: 'max-content' }}
+            options={false}
+            pagination={{ pageSize: 10 }}
+            rowKey="id"
+            {...(toolBarList?.length > 0 && {
+              headerTitle: (
+                <Space>
+                  {toolBarList.map((item) => (
+                    <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
+                      {item.buttonName}
+                    </Button>
+                  ))}
+                </Space>
+              ),
+            })}
+          />
         </div>
-        {renderCodes()}
+        <div
+          className={styles.code_container}
+          style={{ height: `calc(91vh - ${size?.height + 15}px)` }}
+        >
+          <div>
+            <Space style={{ display: 'flex', justifyContent: 'end' }}>
+              <Button
+                className="code-copy"
+                type="link"
+                onClick={() => handleClipboard('.code-copy', handleCopes(codes))}
+              >
+                复制
+              </Button>
+            </Space>
+          </div>
+          <div className={styles.code_content}>
+            <h2>代码：</h2>
+            <code>
+              <pre className={styles.code_body}>
+                {codes.map((code: string, index: number) => (
+                  <p key={index}>{code}</p>
+                ))}
+              </pre>
+            </code>
+          </div>
+        </div>
+      </div>
+      <div className={styles.container_right}>
+        <ProForm
+          formRef={formRef}
+          autoFocusFirstInput
+          onFinish={handleFormFinish}
+          submitter={{
+            searchConfig: {
+              resetText: '重置',
+              submitText: '生成表格',
+            },
+            onReset: () => {
+              setColumns([]);
+              setSelectedRowKeys([]);
+              setDefaultData([]);
+              setToolBarList([]);
+              setConfig({});
+            },
+          }}
+        >
+          <ConfigField />
+          <ToolBarList />
+          <FilterField />
+          <TableListField formRef={formRef} />
+        </ProForm>
       </div>
     </div>
   );

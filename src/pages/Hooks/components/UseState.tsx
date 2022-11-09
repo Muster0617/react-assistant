@@ -1,6 +1,6 @@
-import { Select, Divider, Input, Button, Space } from 'antd';
+import { Divider, Button, Space } from 'antd';
 import styles from './UseState.less';
-import { useState, useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import lodash from 'lodash';
 import { handleClipboard } from '@/utils/index';
 import {
