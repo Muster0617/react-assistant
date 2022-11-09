@@ -1,19 +1,17 @@
 /* eslint-disable */
 
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tooltip, Divider } from 'antd';
+import { Button, Space, Tooltip, Tabs } from 'antd';
 import { useState, useRef, useMemo } from 'react';
 import { ProForm } from '@ant-design/pro-components';
 import styles from './index.less';
 import { handleClipboard } from '@/utils/index';
 import lodash from 'lodash';
-import { useSize } from 'ahooks';
-import TableListField from './TableListField';
+import ItemField from './ItemField';
 import FilterField from './FilterField';
 import ToolBarList from './ToolBarList';
 import ConfigField from './ConfigField';
 import { useModel } from 'umi';
-import { useFocusWithin } from 'ahooks';
 
 const renderTextEllipsis = (text, textSize) => {
   if (text?.length >= textSize) {
@@ -29,24 +27,18 @@ const renderTextEllipsis = (text, textSize) => {
 
 export default ({ history }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [columns, setColumns] = useState([]);
+  const [filterColumns, setFilterColumns] = useState([]);
+  const [itemColumns, setItemColumns] = useState([]);
   const [defaultData, setDefaultData] = useState([]);
   const [toolBarList, setToolBarList] = useState([]);
   const [config, setConfig] = useState({});
-  const tableRef = useRef(null);
-  const size = useSize(tableRef);
   const { initialState, setInitialState } = useModel('@@initialState');
-  const formRef = useRef();
   const wrapRef = useRef(null);
-
-  const isFocusWithin = useFocusWithin(wrapRef, {
-    // 点击页面按钮关闭左侧导航栏
-    onFocus: () => {
-      if (!initialState?.collapsed) {
-        setInitialState({ ...initialState, collapsed: true });
-      }
-    },
-  });
+  const configFormRef = useRef();
+  const toolBarFormRef = useRef();
+  const filterFormRef = useRef();
+  const itemFormRef = useRef();
+  const columns = useMemo(() => [...filterColumns, ...itemColumns], [filterColumns, itemColumns]);
 
   const handleCopes = (codes: string[]) => {
     return codes.join(`\r\n`);
@@ -132,7 +124,7 @@ export default ({ history }) => {
         ...((valueType && [`        valueType: '${valueType}',`]) || []),
         ...((width && [`        width: ${width},`]) || []),
         ...((hideInTable && [`        hideInTable: true,`]) || []),
-        ...((hideInSearch && [`       hideInSearch: true,`]) || []),
+        ...((hideInSearch && [`        hideInSearch: true,`]) || []),
         ...((fieldPropsKeys.length > 0 && [
           `        fieldProps: {`,
           ...fieldPropsCode,
@@ -145,8 +137,8 @@ export default ({ history }) => {
     }
   };
 
-  const handleColumnCode = (list = []) => {
-    let columnsCode = [`  const columns = [${list.length === 0 ? '];' : ''}`];
+  const handleColumnCode = (list: any = []) => {
+    let columnsCode = [`  const columns = [${list.length === 0 ? ']' : ''}`];
     for (const item of list) {
       columnsCode = columnsCode.concat(
         handleColumnItemCode(
@@ -163,14 +155,14 @@ export default ({ history }) => {
         ),
       );
     }
-    if (list.length > 0) columnsCode.push('   ];');
+    if (list.length > 0) columnsCode.push('  ]');
     return columnsCode;
   };
 
   const handleDefaultData = (tableKeys = []) => {
     if (tableKeys.length > 0) {
       let newDefaultData = [];
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < 5; i++) {
         let data = {};
         data.id = i + 1;
         for (const key of tableKeys) {
@@ -203,7 +195,7 @@ export default ({ history }) => {
       defaultDataCode.push(`          },`);
     }
     if (list.length > 0) {
-      defaultDataCode.push(`     ],`);
+      defaultDataCode.push(`      ],`);
     }
     defaultDataCode = defaultDataCode.concat([`      total: ${list.length}`, '    }', '  })', '}']);
     return defaultDataCode;
@@ -220,15 +212,15 @@ export default ({ history }) => {
 
     return [
       `import ProTable from '@ant-design/pro-table'`,
-      `import { Button, Space, Tooltip } from 'antd';`,
-      `import { useState, useRef, useEffect } from 'react';`,
+      `import { Button, Space, Tooltip } from 'antd'`,
+      `import { useState, useRef, useEffect } from 'react'`,
       ` `,
       ...defaultDataCode,
       ` `,
       `export default ({ history }) => {`,
-      ...((config?.isSelect && [`  const [selectedRowKeys, setSelectedRowKeys] = useState([]);`]) ||
+      ...((config?.isSelect && [`  const [selectedRowKeys, setSelectedRowKeys] = useState([])`]) ||
         []),
-      `  const actionRef = useRef();`,
+      `  const actionRef = useRef()`,
       ...(toolBarFuncCode.length > 0 ? [` `] : []),
       ...toolBarFuncCode,
       ...(columnsCode.length > 1 || toolBarFuncCode.length > 0 ? [` `] : []),
@@ -248,7 +240,7 @@ export default ({ history }) => {
       `      tableAlertRender={false}`,
       `      request={async (values) => {`,
       `        const response = await getTableData(values)`,
-      `        if( response?.success ) {`,
+      `        if (response?.success) {`,
       `          return {`,
       `            data: response?.data?.records || [],`,
       `            total: response?.data?.total,`,
@@ -268,10 +260,19 @@ export default ({ history }) => {
     ];
   }, [config, defaultData, columns, toolBarList]);
 
-  const handleFormFinish = (values) => {
-    const { filterList = [], tableList = [], config = {} } = values;
+  const handleConfigFormFinish = (values: any) => {
+    const { config = {} } = values;
+    setConfig(config);
+  };
+
+  const handleToolBarFormFinish = (values: any) => {
+    const { toolBarList = [] } = values;
+    setToolBarList(toolBarList);
+  };
+
+  const handleFilterFormFinish = (values: any) => {
+    const { filterList = [] } = values;
     const newColumns = [];
-    const operateColumn = [];
     for (const item of filterList) {
       const column = {
         title: item?.title || '',
@@ -285,8 +286,15 @@ export default ({ history }) => {
       };
       newColumns.push(column);
     }
+    setFilterColumns(newColumns);
+  };
+
+  const handleItemFormFinish = (values: any) => {
+    const { itemList = [] } = values;
+    const newColumns = [];
+    const operateColumn = [];
     let tableKeys = [];
-    for (const item of tableList) {
+    for (const item of itemList) {
       let column = {};
       if (item.isOperate) {
         column = {
@@ -318,95 +326,154 @@ export default ({ history }) => {
         newColumns.push(column);
       }
     }
+    setItemColumns([...newColumns, ...operateColumn]);
     handleDefaultData(tableKeys);
-    setColumns([...newColumns, ...operateColumn]);
-    setToolBarList(values?.toolBarList || []);
-    setConfig(config);
+  };
+  // 关闭左侧导航栏
+  const handleCollapse = () => {
+    if (!initialState?.collapsed) {
+      setInitialState({ ...initialState, collapsed: true });
+    }
   };
 
   return (
-    <div className={styles.wrapper} ref={wrapRef}>
+    <div className={styles.wrapper} ref={wrapRef} onClick={handleCollapse}>
       <div className={styles.container_left}>
-        <div ref={tableRef}>
-          <ProTable
-            dataSource={defaultData}
-            columns={columns}
-            {...(config?.isSelect && {
-              rowSelection: {
-                onChange: (keys) => setSelectedRowKeys(keys),
-                selectedRowKeys,
-              },
-            })}
-            tableAlertRender={false}
-            search={{ defaultCollapsed: false, labelWidth: 'auto' }}
-            scroll={{ x: 'max-content' }}
-            options={false}
-            pagination={{ pageSize: 10 }}
-            rowKey="id"
-            {...(toolBarList?.length > 0 && {
-              headerTitle: (
-                <Space>
-                  {toolBarList.map((item) => (
-                    <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
-                      {item.buttonName}
-                    </Button>
-                  ))}
+        <Tabs defaultActiveKey="1" onChange={handleCollapse}>
+          <Tabs.TabPane tab="表格展示" key="1">
+            <div className={styles.table_container}>
+              <ProTable
+                dataSource={defaultData}
+                columns={columns}
+                {...(config?.isSelect && {
+                  rowSelection: {
+                    onChange: (keys) => setSelectedRowKeys(keys),
+                    selectedRowKeys,
+                  },
+                })}
+                tableAlertRender={false}
+                search={{ defaultCollapsed: false, labelWidth: 'auto' }}
+                scroll={{ x: 'max-content' }}
+                options={false}
+                pagination={{ pageSize: 10 }}
+                rowKey="id"
+                {...(toolBarList?.length > 0 && {
+                  headerTitle: (
+                    <Space>
+                      {toolBarList.map((item) => (
+                        <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
+                          {item.buttonName}
+                        </Button>
+                      ))}
+                    </Space>
+                  ),
+                })}
+              />
+            </div>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="代码预览" key="2">
+            <div className={styles.code_container}>
+              <div>
+                <Space style={{ display: 'flex', justifyContent: 'end' }}>
+                  <Button
+                    className="code-copy"
+                    type="link"
+                    onClick={() => handleClipboard('.code-copy', handleCopes(codes))}
+                  >
+                    复制
+                  </Button>
                 </Space>
-              ),
-            })}
-          />
-        </div>
-        <div
-          className={styles.code_container}
-          style={{ height: `calc(91vh - ${size?.height + 15}px)` }}
-        >
-          <div>
-            <Space style={{ display: 'flex', justifyContent: 'end' }}>
-              <Button
-                className="code-copy"
-                type="link"
-                onClick={() => handleClipboard('.code-copy', handleCopes(codes))}
-              >
-                复制
-              </Button>
-            </Space>
-          </div>
-          <div className={styles.code_content}>
-            <h2>代码：</h2>
-            <code>
-              <pre className={styles.code_body}>
-                {codes.map((code: string, index: number) => (
-                  <p key={index}>{code}</p>
-                ))}
-              </pre>
-            </code>
-          </div>
-        </div>
+              </div>
+              <div className={styles.code_content}>
+                <code>
+                  <pre className={styles.code_body}>
+                    {codes.map((code: string, index: number) => (
+                      <p key={index}>{code}</p>
+                    ))}
+                  </pre>
+                </code>
+              </div>
+            </div>
+          </Tabs.TabPane>
+        </Tabs>
       </div>
       <div className={styles.container_right}>
-        <ProForm
-          formRef={formRef}
-          autoFocusFirstInput
-          onFinish={handleFormFinish}
-          submitter={{
-            searchConfig: {
-              resetText: '重置',
-              submitText: '生成表格',
-            },
-            onReset: () => {
-              setColumns([]);
-              setSelectedRowKeys([]);
-              setDefaultData([]);
-              setToolBarList([]);
-              setConfig({});
-            },
-          }}
-        >
-          <ConfigField />
-          <ToolBarList />
-          <FilterField />
-          <TableListField formRef={formRef} />
-        </ProForm>
+        <Tabs defaultActiveKey="1" onChange={handleCollapse}>
+          <Tabs.TabPane tab="表格配置" key="1">
+            <ProForm
+              formRef={configFormRef}
+              autoFocusFirstInput
+              onFinish={handleConfigFormFinish}
+              submitter={{
+                searchConfig: {
+                  resetText: '重置',
+                  submitText: '生成表格',
+                },
+                onReset: () => {
+                  setSelectedRowKeys([]);
+                  setConfig({});
+                },
+              }}
+            >
+              <ConfigField />
+            </ProForm>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="工具栏按钮配置" key="2">
+            <ProForm
+              formRef={toolBarFormRef}
+              autoFocusFirstInput
+              onFinish={handleToolBarFormFinish}
+              submitter={{
+                searchConfig: {
+                  resetText: '重置',
+                  submitText: '生成表格',
+                },
+                onReset: () => {
+                  setToolBarList([]);
+                },
+              }}
+            >
+              <ToolBarList />
+            </ProForm>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="筛选项配置" key="3">
+            <ProForm
+              formRef={filterFormRef}
+              autoFocusFirstInput
+              onFinish={handleFilterFormFinish}
+              submitter={{
+                searchConfig: {
+                  resetText: '重置',
+                  submitText: '生成表格',
+                },
+                onReset: () => {
+                  setFilterColumns([]);
+                },
+              }}
+            >
+              <FilterField />
+            </ProForm>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="表格项配置" key="4">
+            <ProForm
+              formRef={itemFormRef}
+              autoFocusFirstInput
+              onFinish={handleItemFormFinish}
+              submitter={{
+                searchConfig: {
+                  resetText: '重置',
+                  submitText: '生成表格',
+                },
+                onReset: () => {
+                  setDefaultData([]);
+                  setItemColumns([]);
+                },
+              }}
+            >
+              <ItemField formRef={itemFormRef} />
+            </ProForm>
+          </Tabs.TabPane>
+        </Tabs>
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ export default () => {
                 name="buttonName"
                 label="按钮名称"
                 width={180}
-                rules={[{ required: true }]}
+                rules={[{ required: true, message: '请输入按钮名称' }]}
                 placeholder="请输入按钮名称"
               />
               <ProFormText
@@ -83,7 +83,7 @@ export default () => {
                   </>
                 }
                 width={180}
-                rules={[{ required: true }]}
+                rules={[{ required: true, message: '请输入按钮Key' }]}
                 placeholder="请输入按钮Key"
               />
             </ProForm.Group>

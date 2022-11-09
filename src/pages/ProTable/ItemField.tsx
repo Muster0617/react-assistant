@@ -21,7 +21,7 @@ export default ({ formRef }) => {
     <ProForm.Group title="表格项配置">
       <ProFormList
         actionRef={actionRef}
-        name="tableList"
+        name="itemList"
         creatorButtonProps={{
           creatorButtonText: '添加表格项',
         }}
@@ -72,9 +72,9 @@ export default ({ formRef }) => {
                             options: tableValueTypeOptions,
                             onChange: (value) => {
                               if (value === 'index') {
-                                const tableList = formRef.current?.getFieldValue('tableList');
-                                tableList[index].title = '序号';
-                                formRef.current?.setFieldsValue({ tableList });
+                                const itemList = formRef.current?.getFieldValue('itemList');
+                                itemList[index].title = '序号';
+                                formRef.current?.setFieldsValue({ itemList });
                               }
                             },
                           }}
@@ -124,9 +124,9 @@ export default ({ formRef }) => {
                   fieldProps={{
                     onChange: (value) => {
                       if (value) {
-                        const tableList = formRef.current?.getFieldValue('tableList');
-                        tableList[index].title = '操作';
-                        formRef.current?.setFieldsValue({ tableList });
+                        const itemList = formRef.current?.getFieldValue('itemList');
+                        itemList[index].title = '操作';
+                        formRef.current?.setFieldsValue({ itemList });
                       }
                     },
                   }}
