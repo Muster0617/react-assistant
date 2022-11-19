@@ -2,7 +2,7 @@ import { Divider, Button, Space } from 'antd';
 import styles from './UseState.less';
 import { useRef } from 'react';
 import lodash from 'lodash';
-import { handleClipboard } from '@/utils/index';
+import { copyText } from '@/utils/index';
 import {
   ProForm,
   ProFormSelect,
@@ -111,21 +111,21 @@ export default () => {
                     <Button
                       className="code-copy"
                       type="link"
-                      onClick={() => handleClipboard('.code-copy', handleCope(codes, '1'))}
+                      onClick={() => copyText('.code-copy', handleCope(codes, '1'))}
                     >
                       全部复制
                     </Button>
                     <Button
                       type="link"
                       className="code-copy"
-                      onClick={() => handleClipboard('.code-copy', handleCope(codes, '2'))}
+                      onClick={() => copyText('.code-copy', handleCope(codes, '2'))}
                     >
                       复制引用
                     </Button>
                     <Button
                       type="link"
                       className="code-copy"
-                      onClick={() => handleClipboard('.code-copy', handleCope(codes, '3'))}
+                      onClick={() => copyText('.code-copy', handleCope(codes, '3'))}
                     >
                       复制使用
                     </Button>

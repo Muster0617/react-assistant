@@ -3,34 +3,48 @@
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Space, Tooltip, Tabs } from 'antd';
 import { useState, useRef, useMemo } from 'react';
-import { ProForm } from '@ant-design/pro-components';
 import styles from './index.less';
-import { handleClipboard } from '@/utils/index';
+import { copyText } from '@/utils/index';
 import lodash from 'lodash';
-import ItemField from './ItemField';
-import FilterField from './FilterField';
-import ToolBarList from './ToolBarList';
-import ConfigField from './ConfigField';
+import ItemForm from './ItemForm';
+import ToolBarForm from './ToolBarForm';
+import ConfigForm from './ConfigForm';
 import { useModel } from 'umi';
 
-const renderTextEllipsis = (text, textSize) => {
-  if (text?.length >= textSize) {
-    return (
-      <Tooltip title={text}>
-        <span>{text.slice(0, textSize) + '...'}</span>
-      </Tooltip>
-    );
-  } else {
-    return <span>{text}</span>;
-  }
-};
+// const renderTextEllipsis = (text, textSize) => {
+//   if (text?.length >= textSize) {
+//     return (
+//       <Tooltip title={text}>
+//         <span>{text.slice(0, textSize) + '...'}</span>
+//       </Tooltip>
+//     );
+//   } else {
+//     return <span>{text}</span>;
+//   }
+// };
 
 export default ({ history }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [filterColumns, setFilterColumns] = useState([]);
-  const [itemColumns, setItemColumns] = useState([]);
-  const [defaultData, setDefaultData] = useState([]);
-  const [toolBarList, setToolBarList] = useState([]);
+  const [itemColumns, setItemColumns] = useState([
+    {
+      title: '姓名',
+      dataIndex: 'name',
+      hideInSearch: true,
+    },
+  ]);
+  const [defaultData, setDefaultData] = useState([
+    {
+      name: '模拟数据',
+    },
+  ]);
+  const [toolBarList, setToolBarList] = useState([
+    {
+      buttonName: '新建',
+      buttonKey: 'add',
+      buttonType: 'primary',
+    },
+  ]);
   const [config, setConfig] = useState({});
   const { initialState, setInitialState } = useModel('@@initialState');
   const wrapRef = useRef(null);
@@ -46,29 +60,29 @@ export default ({ history }) => {
 
   const handleToolBarItemCode = (buttonType: string, buttonName: string, buttonKey: string) => {
     return [
-      `             <Button key="${buttonKey}" type="${buttonType}" onClick={handle${lodash.upperFirst(
+      `           <Button key="${buttonKey}" type="${buttonType}" onClick={handle${lodash.upperFirst(
         buttonKey,
       )}Tool}>`,
       `                ${buttonName}`,
-      `             </Button>`,
+      `           </Button>`,
     ];
   };
 
   const handleToolBarCode = (list = []) => {
-    let toolBarCode = [`      headerTitle = {`, `           <Space>`];
+    let toolBarCode = [`      headerTitle = {`, `        <Space>`];
     for (const item of list) {
       toolBarCode = toolBarCode.concat(
         handleToolBarItemCode(item?.buttonType, item?.buttonName, item?.buttonKey),
       );
     }
-    toolBarCode = [...toolBarCode, `          </Space>`, `       }`];
+    toolBarCode = [...toolBarCode, `        </Space>`, `       }`];
     return toolBarCode;
   };
 
   const handleToolBarFuncCode = (list = []) => {
     let toolBarFuncCode = [];
     for (const item of list) {
-      toolBarFuncCode.push(`  const handle${lodash.upperFirst(item?.buttonKey)}Tool = () => {}`);
+      toolBarFuncCode.push(`  const handle${lodash.upperFirst(item?.buttonKey)}Tool = () => {};`);
     }
     return toolBarFuncCode;
   };
@@ -138,7 +152,7 @@ export default ({ history }) => {
   };
 
   const handleColumnCode = (list: any = []) => {
-    let columnsCode = [`  const columns = [${list.length === 0 ? ']' : ''}`];
+    let columnsCode = [`  const columns = [${list.length === 0 ? '];' : ''}`];
     for (const item of list) {
       columnsCode = columnsCode.concat(
         handleColumnItemCode(
@@ -155,14 +169,14 @@ export default ({ history }) => {
         ),
       );
     }
-    if (list.length > 0) columnsCode.push('  ]');
+    if (list.length > 0) columnsCode.push('  ];');
     return columnsCode;
   };
 
   const handleDefaultData = (tableKeys = []) => {
     if (tableKeys.length > 0) {
       let newDefaultData = [];
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 20; i++) {
         let data = {};
         data.id = i + 1;
         for (const key of tableKeys) {
@@ -197,7 +211,12 @@ export default ({ history }) => {
     if (list.length > 0) {
       defaultDataCode.push(`      ],`);
     }
-    defaultDataCode = defaultDataCode.concat([`      total: ${list.length}`, '    }', '  })', '}']);
+    defaultDataCode = defaultDataCode.concat([
+      `      total: ${list.length},`,
+      '    },',
+      '  });',
+      '};',
+    ]);
     return defaultDataCode;
   };
 
@@ -211,16 +230,16 @@ export default ({ history }) => {
     const toolBarFuncCode = toolBarList?.length > 0 ? handleToolBarFuncCode(toolBarList) : [];
 
     return [
-      `import ProTable from '@ant-design/pro-table'`,
-      `import { Button, Space, Tooltip } from 'antd'`,
-      `import { useState, useRef, useEffect } from 'react'`,
+      `import ProTable from '@ant-design/pro-table';`,
+      `import { Button, Space, Tooltip } from 'antd';`,
+      `import { useState, useRef, useEffect } from 'react';`,
       ` `,
       ...defaultDataCode,
       ` `,
       `export default ({ history }) => {`,
-      ...((config?.isSelect && [`  const [selectedRowKeys, setSelectedRowKeys] = useState([])`]) ||
+      ...((config?.isSelect && [`  const [selectedRowKeys, setSelectedRowKeys] = useState([]);`]) ||
         []),
-      `  const actionRef = useRef()`,
+      `  const actionRef = useRef();`,
       ...(toolBarFuncCode.length > 0 ? [` `] : []),
       ...toolBarFuncCode,
       ...(columnsCode.length > 1 || toolBarFuncCode.length > 0 ? [` `] : []),
@@ -239,13 +258,13 @@ export default ({ history }) => {
         []),
       `      tableAlertRender={false}`,
       `      request={async (values) => {`,
-      `        const response = await getTableData(values)`,
+      `        const response = await getTableData(values);`,
       `        if (response?.success) {`,
       `          return {`,
       `            data: response?.data?.records || [],`,
       `            total: response?.data?.total,`,
-      `            success: true`,
-      `          }`,
+      `            success: true,`,
+      `          };`,
       `        }`,
       `      }}`,
       `      search={{ defaultCollapsed: false, labelWidth: 'auto' }}`,
@@ -255,8 +274,8 @@ export default ({ history }) => {
       `      rowKey="id"`,
       ...toolBarCode,
       `    />`,
-      `  )`,
-      `}`,
+      `  );`,
+      `};`,
     ];
   }, [config, defaultData, columns, toolBarList]);
 
@@ -270,34 +289,37 @@ export default ({ history }) => {
     setToolBarList(toolBarList);
   };
 
-  const handleFilterFormFinish = (values: any) => {
-    const { filterList = [] } = values;
-    const newColumns = [];
-    for (const item of filterList) {
-      const column = {
-        title: item?.title || '',
-        dataIndex: item?.dataIndex || '',
-        valueType: item?.valueType || 'text',
-        hideInTable: true,
-        fieldProps: {
-          ...(item?.maxLength ? { maxLength: item.maxLength } : {}),
-          ...(item?.placeholder ? { placeholder: item.placeholder } : {}),
-        },
-      };
-      newColumns.push(column);
-    }
-    setFilterColumns(newColumns);
-  };
+  // const handleFilterFormFinish = (values: any) => {
+  //   const { filterList = [] } = values;
+  //   const newColumns = [];
+  //   for (const item of filterList) {
+  //     const column = {
+  //       title: item?.title || '',
+  //       dataIndex: item?.dataIndex || '',
+  //       valueType: item?.valueType || 'text',
+  //       hideInTable: true,
+  //       fieldProps: {
+  //         ...(item?.maxLength ? { maxLength: item.maxLength } : {}),
+  //         ...(item?.placeholder ? { placeholder: item.placeholder } : {}),
+  //       },
+  //     };
+  //     newColumns.push(column);
+  //   }
+  //   setFilterColumns(newColumns);
+  // };
 
   const handleItemFormFinish = (values: any) => {
     const { itemList = [] } = values;
-    const newColumns = [];
-    const operateColumn = [];
+    const itemColumns = [];
+    const filterItemColumns = [];
+    const operateColumns = [];
     let tableKeys = [];
     for (const item of itemList) {
-      let column = {};
+      let itemColumn = {};
+      let operateColumn = {};
+      let filterItemColumn = {};
       if (item.isOperate) {
-        column = {
+        operateColumn = {
           title: item.title,
           hideInSearch: true,
           isOperate: true,
@@ -312,10 +334,10 @@ export default ({ history }) => {
             ));
           },
         };
-        operateColumn.push(column);
+        operateColumns.push(operateColumn);
       } else {
         tableKeys.push(item?.dataIndex);
-        column = {
+        itemColumn = {
           title: item?.title || '',
           dataIndex: item?.dataIndex || '',
           valueType: item?.valueType || '',
@@ -323,10 +345,28 @@ export default ({ history }) => {
           hasRender: item?.hasRender,
           ...(item?.width ? { width: item?.width } : {}),
         };
-        newColumns.push(column);
+        itemColumns.push(itemColumn);
+        if (item.isFilter) {
+          filterItemColumn = {
+            title: item?.filterTitle || '',
+            dataIndex: item?.dataIndex || '',
+            valueType: item?.filterValueType || 'text',
+            hideInTable: true,
+            fieldProps: {
+              ...(item?.maxLength ? { maxLength: item.maxLength } : {}),
+              ...(item?.filterValueType === 'text'
+                ? { placeholder: `请输入${item?.filterTitle}` }
+                : {}),
+              ...(item?.filterValueType.includes('Range')
+                ? { placeholder: ['开始时间', '结束时间'] }
+                : {}),
+            },
+          };
+          filterItemColumns.push(filterItemColumn);
+        }
       }
     }
-    setItemColumns([...newColumns, ...operateColumn]);
+    setItemColumns([...filterItemColumns, ...itemColumns, ...operateColumns]);
     handleDefaultData(tableKeys);
   };
   // 关闭左侧导航栏
@@ -378,7 +418,7 @@ export default ({ history }) => {
                   <Button
                     className="code-copy"
                     type="link"
-                    onClick={() => handleClipboard('.code-copy', handleCopes(codes))}
+                    onClick={() => copyText('.code-copy', handleCopes(codes))}
                   >
                     复制
                   </Button>
@@ -398,80 +438,32 @@ export default ({ history }) => {
         </Tabs>
       </div>
       <div className={styles.container_right}>
-        <Tabs defaultActiveKey="1" onChange={handleCollapse}>
+        <Tabs defaultActiveKey="4" onChange={handleCollapse}>
           <Tabs.TabPane tab="表格配置" key="1">
-            <ProForm
-              formRef={configFormRef}
-              autoFocusFirstInput
+            <ConfigForm
               onFinish={handleConfigFormFinish}
-              submitter={{
-                searchConfig: {
-                  resetText: '重置',
-                  submitText: '生成表格',
-                },
-                onReset: () => {
-                  setSelectedRowKeys([]);
-                  setConfig({});
-                },
+              onReset={() => {
+                setSelectedRowKeys([]);
+                setConfig({});
               }}
-            >
-              <ConfigField />
-            </ProForm>
+            />
           </Tabs.TabPane>
           <Tabs.TabPane tab="工具栏按钮配置" key="2">
-            <ProForm
-              formRef={toolBarFormRef}
-              autoFocusFirstInput
+            <ToolBarForm
               onFinish={handleToolBarFormFinish}
-              submitter={{
-                searchConfig: {
-                  resetText: '重置',
-                  submitText: '生成表格',
-                },
-                onReset: () => {
-                  setToolBarList([]);
-                },
+              onReset={() => {
+                setToolBarList([]);
               }}
-            >
-              <ToolBarList />
-            </ProForm>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="筛选项配置" key="3">
-            <ProForm
-              formRef={filterFormRef}
-              autoFocusFirstInput
-              onFinish={handleFilterFormFinish}
-              submitter={{
-                searchConfig: {
-                  resetText: '重置',
-                  submitText: '生成表格',
-                },
-                onReset: () => {
-                  setFilterColumns([]);
-                },
-              }}
-            >
-              <FilterField />
-            </ProForm>
+            />
           </Tabs.TabPane>
           <Tabs.TabPane tab="表格项配置" key="4">
-            <ProForm
-              formRef={itemFormRef}
-              autoFocusFirstInput
+            <ItemForm
               onFinish={handleItemFormFinish}
-              submitter={{
-                searchConfig: {
-                  resetText: '重置',
-                  submitText: '生成表格',
-                },
-                onReset: () => {
-                  setDefaultData([]);
-                  setItemColumns([]);
-                },
+              onReset={() => {
+                setDefaultData([]);
+                setItemColumns([]);
               }}
-            >
-              <ItemField formRef={itemFormRef} />
-            </ProForm>
+            />
           </Tabs.TabPane>
         </Tabs>
       </div>

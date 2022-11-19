@@ -1,6 +1,6 @@
 export const filterValueTypeOptions = [
   {
-    label: '文本',
+    label: '输入框',
     value: 'text',
   },
   {
@@ -23,30 +23,34 @@ export const filterValueTypeOptions = [
 
 export const tableValueTypeOptions = [
   {
-    label: 'text',
+    label: '文本',
     value: 'text',
   },
   {
-    label: 'index',
+    label: '序列',
     value: 'index',
+  },
+  {
+    label: '枚举',
+    value: 'enum',
   },
 ];
 
 export const buttonTypeOptions = [
   {
-    label: 'default',
+    label: 'Default',
     value: 'default',
   },
   {
-    label: 'primary',
+    label: 'Primary',
     value: 'primary',
   },
   {
-    label: 'link',
+    label: 'Link',
     value: 'link',
   },
   {
-    label: 'text',
+    label: 'Text',
     value: 'text',
   },
 ];
