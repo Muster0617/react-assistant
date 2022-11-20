@@ -1,6 +1,6 @@
 import { Divider, Button, Space } from 'antd';
 import styles from './UseState.less';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import lodash from 'lodash';
 import { copyText } from '@/utils/index';
 import {
@@ -10,7 +10,7 @@ import {
   ProFormList,
   ProFormDependency,
 } from '@ant-design/pro-components';
-
+import CodeView from '@/components/CodeView';
 const options = [
   {
     label: 'String',
@@ -95,52 +95,17 @@ export default () => {
         </ProFormList>
         <ProFormDependency name={['variables']}>
           {({ variables }) => {
-            const codes = [`import { useState } from 'react';`];
+            const codeList = [`import { useState } from 'react';`];
             for (const item of variables) {
-              codes.push(
+              codeList.push(
                 `const [${item?.name || ''}, set${lodash.upperFirst(
                   item?.name,
                 )}] = useState(${handleType(item?.type)});`,
               );
             }
-            return (
-              <>
-                <Divider />
-                <div>
-                  <Space style={{ display: 'flex', justifyContent: 'end' }}>
-                    <Button
-                      className="code-copy"
-                      type="link"
-                      onClick={() => copyText('.code-copy', handleCope(codes, '1'))}
-                    >
-                      全部复制
-                    </Button>
-                    <Button
-                      type="link"
-                      className="code-copy"
-                      onClick={() => copyText('.code-copy', handleCope(codes, '2'))}
-                    >
-                      复制引用
-                    </Button>
-                    <Button
-                      type="link"
-                      className="code-copy"
-                      onClick={() => copyText('.code-copy', handleCope(codes, '3'))}
-                    >
-                      复制使用
-                    </Button>
-                  </Space>
-                </div>
-                <div className={styles.code_container}>
-                  <h2>代码：</h2>
-                  <code>
-                    {codes.map((code: string, index: number) => (
-                      <p key={index}>{code}</p>
-                    ))}
-                  </code>
-                </div>
-              </>
-            );
+            const codes = codeList.join(`\r\n`);
+
+            return <CodeView codes={codes} />;
           }}
         </ProFormDependency>
       </ProForm>

@@ -2,12 +2,14 @@
 
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Space, Tooltip, Tabs } from 'antd';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import styles from './index.less';
 import { copyText } from '@/utils/index';
 import lodash from 'lodash';
 import ItemForm from './ItemForm';
 import ToolBarForm from './ToolBarForm';
+import CodeView from '@/components/CodeView';
+
 import ConfigForm from './ConfigForm';
 import { useModel } from 'umi';
 
@@ -54,10 +56,6 @@ export default ({ history }) => {
   const itemFormRef = useRef();
   const columns = useMemo(() => [...filterColumns, ...itemColumns], [filterColumns, itemColumns]);
 
-  const handleCopes = (codes: string[]) => {
-    return codes.join(`\r\n`);
-  };
-
   const handleToolBarItemCode = (buttonType: string, buttonName: string, buttonKey: string) => {
     return [
       `           <Button key="${buttonKey}" type="${buttonType}" onClick={handle${lodash.upperFirst(
@@ -75,7 +73,7 @@ export default ({ history }) => {
         handleToolBarItemCode(item?.buttonType, item?.buttonName, item?.buttonKey),
       );
     }
-    toolBarCode = [...toolBarCode, `        </Space>`, `       }`];
+    toolBarCode = [...toolBarCode, `        </Space>`, `      }`];
     return toolBarCode;
   };
 
@@ -229,7 +227,7 @@ export default ({ history }) => {
     // ----------
     const toolBarFuncCode = toolBarList?.length > 0 ? handleToolBarFuncCode(toolBarList) : [];
 
-    return [
+    const codeList = [
       `import ProTable from '@ant-design/pro-table';`,
       `import { Button, Space, Tooltip } from 'antd';`,
       `import { useState, useRef, useEffect } from 'react';`,
@@ -277,6 +275,8 @@ export default ({ history }) => {
       `  );`,
       `};`,
     ];
+
+    return codeList.join(`\r\n`);
   }, [config, defaultData, columns, toolBarList]);
 
   const handleConfigFormFinish = (values: any) => {
@@ -413,26 +413,7 @@ export default ({ history }) => {
           </Tabs.TabPane>
           <Tabs.TabPane tab="代码预览" key="2">
             <div className={styles.code_container}>
-              <div>
-                <Space style={{ display: 'flex', justifyContent: 'end' }}>
-                  <Button
-                    className="code-copy"
-                    type="link"
-                    onClick={() => copyText('.code-copy', handleCopes(codes))}
-                  >
-                    复制
-                  </Button>
-                </Space>
-              </div>
-              <div className={styles.code_content}>
-                <code>
-                  <pre className={styles.code_body}>
-                    {codes.map((code: string, index: number) => (
-                      <p key={index}>{code}</p>
-                    ))}
-                  </pre>
-                </code>
-              </div>
+              <CodeView codes={codes} />
             </div>
           </Tabs.TabPane>
         </Tabs>
