@@ -9,8 +9,15 @@ import lodash from 'lodash';
 import ItemForm from './ItemForm';
 import ToolBarForm from './ToolBarForm';
 import CodeView from '@/components/CodeView';
-
 import ConfigForm from './ConfigForm';
+import {
+  defaultConfig,
+  defaultToolBarList,
+  defaultItemColumns,
+  defaultDataSource,
+  defaultFilterItemColumns,
+} from './constant';
+
 import { useModel } from 'umi';
 
 // const renderTextEllipsis = (text, textSize) => {
@@ -27,47 +34,53 @@ import { useModel } from 'umi';
 
 export default ({ history }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [filterColumns, setFilterColumns] = useState([]);
-  const [itemColumns, setItemColumns] = useState([
-    {
-      title: '姓名',
-      dataIndex: 'name',
-      hideInSearch: true,
-    },
-  ]);
-  const [defaultData, setDefaultData] = useState([
-    {
-      name: '模拟数据',
-    },
-  ]);
-  const [toolBarList, setToolBarList] = useState([
-    {
-      buttonName: '新建',
-      buttonKey: 'add',
-      buttonType: 'primary',
-    },
-  ]);
-  const [config, setConfig] = useState({});
+  const [rightActiveKey, setRightActiveKey] = useState('1');
+
+  const [filterItemColumns, setFilterItemColumns] = useState(defaultFilterItemColumns);
+  const [itemColumns, setItemColumns] = useState(defaultItemColumns);
+  const [dataSource, setDataSource] = useState(defaultDataSource);
+  const [toolBarList, setToolBarList] = useState(defaultToolBarList);
+  const [config, setConfig] = useState(defaultConfig);
   const { initialState, setInitialState } = useModel('@@initialState');
   const wrapRef = useRef(null);
   const configFormRef = useRef();
   const toolBarFormRef = useRef();
-  const filterFormRef = useRef();
   const itemFormRef = useRef();
-  const columns = useMemo(() => [...filterColumns, ...itemColumns], [filterColumns, itemColumns]);
+  const columns = useMemo(
+    () => [...filterItemColumns, ...itemColumns],
+    [filterItemColumns, itemColumns],
+  );
+
+  const init = () => {
+    setTimeout(() => {
+      if (toolBarFormRef.current?.getFieldValue('toolBarList') === undefined) {
+        toolBarFormRef.current?.setFieldsValue({ toolBarList });
+      }
+      if (toolBarFormRef.current?.getFieldsValue() === undefined) {
+        configFormRef.current?.setFieldsValue({ ...config });
+      }
+      if (toolBarFormRef.current?.getFieldValue('itemList') === undefined) {
+        itemFormRef.current?.setFieldsValue({ itemList: itemColumns });
+      }
+    }, 0);
+  };
+
+  useEffect(() => {
+    init();
+  }, [rightActiveKey]);
 
   const handleToolBarItemCode = (buttonType: string, buttonName: string, buttonKey: string) => {
     return [
-      `           <Button key="${buttonKey}" type="${buttonType}" onClick={handle${lodash.upperFirst(
+      `          <Button key="${buttonKey}" type="${buttonType}" onClick={handle${lodash.upperFirst(
         buttonKey,
       )}Tool}>`,
-      `                ${buttonName}`,
-      `           </Button>`,
+      `            ${buttonName}`,
+      `          </Button>`,
     ];
   };
 
   const handleToolBarCode = (list = []) => {
-    let toolBarCode = [`      headerTitle = {`, `        <Space>`];
+    let toolBarCode = [`      headerTitle={`, `        <Space>`];
     for (const item of list) {
       toolBarCode = toolBarCode.concat(
         handleToolBarItemCode(item?.buttonType, item?.buttonName, item?.buttonKey),
@@ -100,51 +113,67 @@ export default ({ history }) => {
     if (isOperate) {
       const operateItemCode = [];
       for (const operateItem of operateList) {
-        operateItemCode.push(`           <a key="${operateItem.buttonKey}" onClick={() => {}}>`);
-        operateItemCode.push(`              ${operateItem.buttonName}`);
-        operateItemCode.push(`           </a>,`);
+        operateItemCode.push(`        <a key="${operateItem.buttonKey}" onClick={() => {}}>`);
+        operateItemCode.push(`          ${operateItem.buttonName}`);
+        operateItemCode.push(`        </a>,`);
       }
       return [
-        `     {`,
-        `        title: '${title}',`,
-        `        key: 'operate',`,
-        `        align: 'center',`,
-        `        valueType: 'option',`,
-        ...((width && [`        width: ${width},`]) || []),
-        `        render: ( _ , record ) => [`,
+        `    {`,
+        `      title: '${title}',`,
+        `      key: 'operate',`,
+        `      align: 'center',`,
+        `      valueType: 'option',`,
+        ...((width && [`      width: ${width},`]) || []),
+        `      render: ( _ , record ) => [`,
         ...operateItemCode,
-        `        ],`,
-        `     },`,
+        `      ],`,
+        `    },`,
       ];
     } else {
       const fieldPropsCode = [];
       const fieldPropsKeys = Object.keys(fieldProps);
-      const isStringType = ['placeholder'];
+      const fieldPropsType = {
+        text: [
+          { prop: 'placeholder', type: 'String' },
+          { prop: 'maxLength', type: 'Number' },
+        ],
+        dateRange: [{ prop: 'placeholder', type: 'Arrary' }],
+        dateTimeRange: [{ prop: 'placeholder', type: 'Arrary' }],
+      };
       for (const fieldPropsKey of fieldPropsKeys) {
-        fieldPropsCode.push(
-          `            ${fieldPropsKey}: ${
-            isStringType.includes(fieldPropsKey)
-              ? `'${fieldProps[fieldPropsKey]}'`
-              : fieldProps[fieldPropsKey]
-          },`,
-        );
+        const fieldPropCodeType = fieldPropsType?.[valueType]?.find(
+          (item) => item?.prop === fieldPropsKey,
+        )?.type;
+        let fieldPropCode = '';
+        switch (fieldPropCodeType) {
+          default:
+          case 'String':
+            fieldPropCode = `        ${fieldPropsKey}: ${`'${fieldProps[fieldPropsKey]}'`},`;
+            break;
+          case 'Arrary':
+            fieldPropCode = `        ${fieldPropsKey}: ${`['${fieldProps[fieldPropsKey]?.join(
+              `', '`,
+            )}']`},`;
+            break;
+          case 'Number':
+            fieldPropCode = `        ${fieldPropsKey}: ${`${fieldProps[fieldPropsKey]}`},`;
+            break;
+        }
+
+        fieldPropsCode.push(fieldPropCode);
       }
       return [
-        `     {`,
-        `        title: '${title}',`,
-        ...((dataIndex && [`        dataIndex: '${dataIndex}',`]) || []),
-        ...((valueType && [`        valueType: '${valueType}',`]) || []),
-        ...((width && [`        width: ${width},`]) || []),
-        ...((hideInTable && [`        hideInTable: true,`]) || []),
-        ...((hideInSearch && [`        hideInSearch: true,`]) || []),
-        ...((fieldPropsKeys.length > 0 && [
-          `        fieldProps: {`,
-          ...fieldPropsCode,
-          `        },`,
-        ]) ||
+        `    {`,
+        `      title: '${title}',`,
+        ...((dataIndex && [`      dataIndex: '${dataIndex}',`]) || []),
+        ...((valueType && [`      valueType: '${valueType}',`]) || []),
+        ...((width && [`      width: ${width},`]) || []),
+        ...((hideInTable && [`      hideInTable: true,`]) || []),
+        ...((hideInSearch && [`      hideInSearch: true,`]) || []),
+        ...((fieldPropsKeys.length > 0 && [`      fieldProps: {`, ...fieldPropsCode, `      },`]) ||
           []),
-        ...((hasRender && [`        render: ( _ , record ) => (record?.${dataIndex}),`]) || []),
-        `     },`,
+        ...((hasRender && [`      render: ( _ , record ) => (record?.${dataIndex}),`]) || []),
+        `    },`,
       ];
     }
   };
@@ -174,7 +203,7 @@ export default ({ history }) => {
   const handleDefaultData = (tableKeys = []) => {
     if (tableKeys.length > 0) {
       let newDefaultData = [];
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 15; i++) {
         let data = {};
         data.id = i + 1;
         for (const key of tableKeys) {
@@ -184,33 +213,37 @@ export default ({ history }) => {
         }
         newDefaultData.push(data);
       }
-      setDefaultData(newDefaultData);
+      setDataSource(newDefaultData);
     } else {
-      setDefaultData([]);
+      setDataSource([]);
     }
   };
 
   const handleDefaultDataCode = (list = []) => {
+    const tableKeys = Object.keys(list?.[0] || {})?.filter((item) => item !== 'id');
     let defaultDataCode = [
       'const getTableData = () => {',
+      `  const tableKeys = ${tableKeys?.length > 0 ? `['${tableKeys.join(`', '`)}'];` : `[]`}`,
+      `  let dataSource = [];`,
+      `  if (tableKeys.length > 0) {`,
+      `    for (let i = 0; i < 15; i++) {`,
+      `      let data = {};`,
+      `      data.id = i + 1;`,
+      `      for (const key of tableKeys) {`,
+      `        if (key) {`,
+      `          data[key] = '模拟数据';`,
+      `        }`,
+      `      }`,
+      `      dataSource.push(data);`,
+      `    }`,
+      `  }`,
       `  return Promise.resolve({`,
       `    success: true,`,
       `    data: {`,
-      `      records: [${list?.length > 0 ? '' : '],'}`,
+      `      records: dataSource,`,
     ];
-    for (const item of list) {
-      const keys = Object.keys(item);
-      defaultDataCode.push(`          {`);
-      for (const key of keys) {
-        defaultDataCode.push(`            ${key}: "${item[key]}",`);
-      }
-      defaultDataCode.push(`          },`);
-    }
-    if (list.length > 0) {
-      defaultDataCode.push(`      ],`);
-    }
     defaultDataCode = defaultDataCode.concat([
-      `      total: ${list.length},`,
+      `      total: ${tableKeys.length > 0 ? 15 : 0},`,
       '    },',
       '  });',
       '};',
@@ -219,7 +252,7 @@ export default ({ history }) => {
   };
 
   const codes = useMemo(() => {
-    let defaultDataCode = handleDefaultDataCode(defaultData);
+    let defaultDataCode = handleDefaultDataCode(dataSource);
     // ----------
     let columnsCode = handleColumnCode(columns);
     // ----------
@@ -277,7 +310,7 @@ export default ({ history }) => {
     ];
 
     return codeList.join(`\r\n`);
-  }, [config, defaultData, columns, toolBarList]);
+  }, [config, dataSource, columns, toolBarList]);
 
   const handleConfigFormFinish = (values: any) => {
     const { config = {} } = values;
@@ -310,6 +343,7 @@ export default ({ history }) => {
 
   const handleItemFormFinish = (values: any) => {
     const { itemList = [] } = values;
+    console.log(itemList, 'itemList');
     const itemColumns = [];
     const filterItemColumns = [];
     const operateColumns = [];
@@ -366,7 +400,8 @@ export default ({ history }) => {
         }
       }
     }
-    setItemColumns([...filterItemColumns, ...itemColumns, ...operateColumns]);
+    setFilterItemColumns([...filterItemColumns]);
+    setItemColumns([...itemColumns, ...operateColumns]);
     handleDefaultData(tableKeys);
   };
   // 关闭左侧导航栏
@@ -376,6 +411,11 @@ export default ({ history }) => {
     }
   };
 
+  const handleRightTabChange = (key: string) => {
+    handleCollapse();
+    setRightActiveKey(key);
+  };
+
   return (
     <div className={styles.wrapper} ref={wrapRef} onClick={handleCollapse}>
       <div className={styles.container_left}>
@@ -383,7 +423,7 @@ export default ({ history }) => {
           <Tabs.TabPane tab="表格展示" key="1">
             <div className={styles.table_container}>
               <ProTable
-                dataSource={defaultData}
+                dataSource={dataSource}
                 columns={columns}
                 {...(config?.isSelect && {
                   rowSelection: {
@@ -419,9 +459,10 @@ export default ({ history }) => {
         </Tabs>
       </div>
       <div className={styles.container_right}>
-        <Tabs defaultActiveKey="4" onChange={handleCollapse}>
+        <Tabs activeKey={rightActiveKey} onChange={handleRightTabChange}>
           <Tabs.TabPane tab="表格配置" key="1">
             <ConfigForm
+              formRef={configFormRef}
               onFinish={handleConfigFormFinish}
               onReset={() => {
                 setSelectedRowKeys([]);
@@ -431,6 +472,7 @@ export default ({ history }) => {
           </Tabs.TabPane>
           <Tabs.TabPane tab="工具栏按钮配置" key="2">
             <ToolBarForm
+              formRef={toolBarFormRef}
               onFinish={handleToolBarFormFinish}
               onReset={() => {
                 setToolBarList([]);
@@ -439,9 +481,10 @@ export default ({ history }) => {
           </Tabs.TabPane>
           <Tabs.TabPane tab="表格项配置" key="4">
             <ItemForm
+              formRef={itemFormRef}
               onFinish={handleItemFormFinish}
               onReset={() => {
-                setDefaultData([]);
+                setDataSource([]);
                 setItemColumns([]);
               }}
             />

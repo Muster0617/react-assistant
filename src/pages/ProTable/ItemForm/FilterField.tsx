@@ -11,7 +11,7 @@ import { filterValueTypeOptions } from '../constant';
 import { Space } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { useRef } from 'react';
-import FormTitle from './FormTitle';
+import FormTitle from '@/components/FormTitle';
 
 export default ({ formRef, index }) => {
   return (

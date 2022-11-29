@@ -1,4 +1,4 @@
-import styles from './FormTitle.less';
+import styles from './index.less';
 
 export default ({ title = '' }) => {
   return (

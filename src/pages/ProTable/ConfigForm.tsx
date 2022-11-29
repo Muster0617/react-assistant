@@ -10,8 +10,7 @@ import {
 import { useRef } from 'react';
 
 export default (props) => {
-  const { onFinish, onReset } = props;
-  const formRef = useRef();
+  const { onFinish, onReset, formRef } = props;
 
   return (
     <ProForm
