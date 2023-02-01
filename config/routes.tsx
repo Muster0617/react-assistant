@@ -12,6 +12,18 @@
     icon: 'InsertRowAboveOutlined',
   },
   {
+    path: '/demoManage',
+    name: 'Demo',
+    icon: 'InsertRowAboveOutlined',
+    routes: [
+      {
+        path: '/demoManage/map',
+        name: 'Map',
+        component: './DemoManage/Map',
+      }
+    ]
+  },
+  {
     path: '/',
     redirect: '/hooks',
   },
