@@ -49,9 +49,7 @@ export default () => {
                             {action}
                           </Space>
                         }
-                        style={{
-                          marginBlockEnd: 8,
-                        }}
+                        style={{ marginBlockEnd: 8 }}
                       >
                         {listDom}
                       </ProCard>

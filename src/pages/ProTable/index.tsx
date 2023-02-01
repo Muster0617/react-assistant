@@ -441,7 +441,7 @@ export default ({ history }) => {
                   headerTitle: (
                     <Space>
                       {toolBarList.map((item) => (
-                        <Button key={item.buttonKey} type={item.buttonType} onClick={() => {}}>
+                        <Button key={item.buttonKey} type={item.buttonType} onClick={() => { }}>
                           {item.buttonName}
                         </Button>
                       ))}
@@ -478,6 +478,9 @@ export default ({ history }) => {
                 setToolBarList([]);
               }}
             />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="枚举配置" key="3">
+
           </Tabs.TabPane>
           <Tabs.TabPane tab="表格项配置" key="4">
             <ItemForm

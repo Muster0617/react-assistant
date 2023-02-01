@@ -36,10 +36,11 @@ export const getAllParentNode = (tree, value, config) => {
  * 超过最大字数显示省略号处理，并添加鼠标移入显示全部内容效果
  *
  * @param {string} text - 文字内容
- * @param {number} value - 展示的最大字数
+ * @param {width} value - 表格项宽度
  * @returns {string | component} Tooltip组件或者文字内容
  */
-export const renderTextEllipsis = (text = '', textSize = 0) => {
+export const handleTextEllipsis = (text = '', width = 240) => {
+  const textSize = Math.floor(width / 14) - 3;
   if (text?.length > textSize) {
     return (
       <Tooltip
@@ -63,6 +64,7 @@ export const renderTextEllipsis = (text = '', textSize = 0) => {
  * @returns {void}
  */
 export const downloadByBlob = (blob, fileName = '默认导出') => {
+  message.loading({ content: '导出中...', key: 'export' });
   const newBlob = new Blob([blob]);
   const elink = document.createElement('a');
   elink.download = `${fileName}.xlsx`;
@@ -70,6 +72,7 @@ export const downloadByBlob = (blob, fileName = '默认导出') => {
   elink.href = URL.createObjectURL(newBlob);
   document.body.appendChild(elink);
   elink.click();
+  message.success({ content: '导出成功', key: 'export', duration: 2 });
   URL.revokeObjectURL(elink.href);
   document.body.removeChild(elink);
 };

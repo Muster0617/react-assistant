@@ -12,7 +12,7 @@ import { tableValueTypeOptions } from '../constant';
 import { Space } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { useRef, useState } from 'react';
-import { EditableProTable } from '@ant-design/pro-components';
+// import { EditableProTable } from '@ant-design/pro-components';
 import FormTitle from '@/components/FormTitle';
 import FilterField from './FilterField';
 import OperateField from './OperateField';
@@ -21,47 +21,47 @@ import { useSize } from 'ahooks';
 
 export default (props) => {
   const { onFinish, onReset, formRef } = props;
-  const [editableKeys, setEditableRowKeys] = useState([]);
+  // const [editableKeys, setEditableRowKeys] = useState([]);
   const actionRef = useRef();
   const wrapRef = useRef(null);
   const size = useSize(wrapRef);
 
-  const enumColumns = [
-    {
-      title: 'Type',
-      dataIndex: 'type',
-      valueType: 'select',
-      initialValue: 'String',
-      fieldProps: {
-        options: [
-          {
-            label: 'String',
-            value: 'String',
-          },
-          {
-            label: 'Number',
-            value: 'Number',
-          },
-          {
-            label: 'Boolean',
-            value: 'Boolean',
-          },
-        ],
-      },
-    },
-    {
-      title: 'Label',
-      dataIndex: 'label',
-    },
-    {
-      title: 'Value',
-      dataIndex: 'value',
-    },
-    {
-      title: '操作',
-      valueType: 'option',
-    },
-  ];
+  // const enumColumns = [
+  //   {
+  //     title: 'Type',
+  //     dataIndex: 'type',
+  //     valueType: 'select',
+  //     initialValue: 'String',
+  //     fieldProps: {
+  //       options: [
+  //         {
+  //           label: 'String',
+  //           value: 'String',
+  //         },
+  //         {
+  //           label: 'Number',
+  //           value: 'Number',
+  //         },
+  //         {
+  //           label: 'Boolean',
+  //           value: 'Boolean',
+  //         },
+  //       ],
+  //     },
+  //   },
+  //   {
+  //     title: 'Label',
+  //     dataIndex: 'label',
+  //   },
+  //   {
+  //     title: 'Value',
+  //     dataIndex: 'value',
+  //   },
+  //   {
+  //     title: '操作',
+  //     valueType: 'option',
+  //   },
+  // ];
 
   return (
     <div className={styles.form_wrapper} ref={wrapRef}>
@@ -127,6 +127,7 @@ export default (props) => {
                           </span>
                         }
                         headerBordered
+                        defaultCollapsed
                         collapsible
                         style={{ minWidth: size?.width - 48 }}
                       >
@@ -200,7 +201,7 @@ export default (props) => {
                             placeholder="请输入Width"
                           />
                         </ProForm.Group>
-                        <ProForm.Group>
+                        {/* <ProForm.Group>
                           <ProFormDependency name={['valueType']}>
                             {({ valueType }) => {
                               if (valueType === 'select') {
@@ -234,7 +235,7 @@ export default (props) => {
                               }
                             }}
                           </ProFormDependency>
-                        </ProForm.Group>
+                        </ProForm.Group> */}
                         <ProFormDependency name={['isFilter']}>
                           {({ isFilter }) => {
                             if (isFilter) {

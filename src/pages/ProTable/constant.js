@@ -101,7 +101,7 @@ export const defaultItemColumns = [
   {
     title: '姓名',
     dataIndex: 'name',
-    valueType: 'select',
+    valueType: 'text',
     hideInSearch: true,
     isFilter: true,
     isOperate: false,
@@ -127,13 +127,13 @@ export const defaultItemColumns = [
     isFilter: false,
     valueType: 'option',
     render: (_, record) => [
-      <a key="edit" onClick={() => {}}>
+      <a key="edit" onClick={() => { }}>
         编辑
       </a>,
-      <a key="info" onClick={() => {}}>
+      <a key="info" onClick={() => { }}>
         详情
       </a>,
-      <a key="delete" onClick={() => {}}>
+      <a key="delete" onClick={() => { }}>
         删除
       </a>,
     ],
