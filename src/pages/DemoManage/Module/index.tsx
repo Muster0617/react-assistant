@@ -101,13 +101,12 @@ const handlePayload = (values) => {
 
 export default (props) => {
   const actionRef = useRef();
+  const reloadTable = () => actionRef.current?.reload();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   // const [id, setId] = useState('');
   // const [formType, setFormType] = useState('add');
   // const [open, setOpen] = useState(false);
-
-  const reloadTable = () => actionRef.current?.reload();
 
   const tableConfig = {
     actionRef: actionRef,

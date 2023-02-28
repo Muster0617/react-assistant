@@ -1,6 +1,6 @@
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tooltip, message } from 'antd';
-import { useMemo, useState } from 'react';
+import { Button, Space, Tooltip } from 'antd';
+import { useMemo } from 'react';
 
 /**
  * 超过最大字数显示省略号处理，并添加鼠标移入显示全部内容效果
@@ -27,7 +27,7 @@ const handleTextEllipsis = (text: String = '', width: Number = 240) => {
 };
 
 export default ({ tableConfig }) => {
-  const { requestConfig, rowSelection } = tableConfig;
+  const { requestConfig, rowSelection, columnOperate = [], toolButton = [] } = tableConfig;
 
   const columns = useMemo(() => {
     const list = [];
@@ -47,7 +47,7 @@ export default ({ tableConfig }) => {
         align: 'center',
         valueType: 'option',
         render: (_, record) =>
-          tableConfig.columnOperate.map((item, index) => (
+          columnOperate?.map((item, index) => (
             <a key={index} onClick={() => item?.onClick(record)}>
               {item.text}
             </a>
@@ -59,7 +59,7 @@ export default ({ tableConfig }) => {
   const renderHeaderTool = useMemo(() => {
     return (
       <Space>
-        {tableConfig.toolButton.map((item, index) => {
+        {toolButton?.map((item, index) => {
           return (
             <Button
               key={index}
