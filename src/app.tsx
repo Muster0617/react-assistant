@@ -1,4 +1,3 @@
-import { PageLoading } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from 'umi';
 import { Button } from 'antd';
 // import { history } from 'umi';
@@ -8,9 +7,7 @@ const open = (url: string) => {
 };
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
-export const initialStateConfig = {
-  loading: <PageLoading />,
-};
+export const initialStateConfig = {};
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -43,26 +40,26 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     links: !initialState.collapsed
       ? [
-        <Button key="1" type="link" onClick={() => open('https://v3.umijs.org/zh-CN')}>
-          <span>UmiJS</span>
-        </Button>,
-        <Button
-          key="1"
-          type="link"
-          onClick={() => open('https://ant-design.antgroup.com/components/overview-cn/')}
-        >
-          <span>Ant Design</span>
-        </Button>,
-        <Button
-          key="2"
-          type="link"
-          onClick={() =>
-            open('https://procomponents.ant.design/components/table/?current=1&pageSize=5')
-          }
-        >
-          <span>Pro Components</span>
-        </Button>,
-      ]
+          <Button key="1" type="link" onClick={() => open('https://v3.umijs.org/zh-CN')}>
+            <span>UmiJS</span>
+          </Button>,
+          <Button
+            key="1"
+            type="link"
+            onClick={() => open('https://ant-design.antgroup.com/components/overview-cn/')}
+          >
+            <span>Ant Design</span>
+          </Button>,
+          <Button
+            key="2"
+            type="link"
+            onClick={() =>
+              open('https://procomponents.ant.design/components/table/?current=1&pageSize=5')
+            }
+          >
+            <span>Pro Components</span>
+          </Button>,
+        ]
       : [],
     menuHeaderRender: undefined,
     // menuItemRender: (item, dom) => {
@@ -83,7 +80,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
     childrenRender: (children, props) => {
-      // if (initialState?.loading) return <PageLoading />;
       return <>{children}</>;
     },
     ...initialState?.settings,

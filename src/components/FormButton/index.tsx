@@ -8,6 +8,13 @@ export default ({
   labelStyle,
   required,
   buttonProps,
+}: {
+  buttonClick: () => {};
+  buttonName: string;
+  label: string;
+  labelStyle: object;
+  required: boolean;
+  buttonProps: object;
 }) => {
   return (
     <div className={styles.form_item}>

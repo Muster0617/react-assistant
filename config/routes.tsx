@@ -20,8 +20,18 @@
         path: '/demoManage/map',
         name: 'Map',
         component: './DemoManage/Map',
-      }
-    ]
+      },
+      {
+        path: '/demoManage/module',
+        name: 'ProTableModule',
+        component: './DemoManage/Module',
+      },
+    ],
+  },
+  {
+    path: '/form',
+    component: './DemoManage/Module/ProForm',
+    hideInMenu: true,
   },
   {
     path: '/',
