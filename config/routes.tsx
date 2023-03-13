@@ -26,6 +26,11 @@
         name: 'ProTableModule',
         component: './DemoManage/Module',
       },
+      {
+        path: '/demoManage/promise',
+        name: 'Promise',
+        component: './DemoManage/Promise',
+      },
     ],
   },
   {

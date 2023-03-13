@@ -1,6 +1,5 @@
-import classNames from "classnames"
-import React from "react"
-
+import classNames from 'classnames';
+import React from 'react';
 
 /**
  * 一个根据判断条件切换样式的组件
@@ -15,10 +14,10 @@ import React from "react"
  */
 
 export default (props) => {
-    const { className, isClassName, noClassName, condition, children, onClick } = props
-    return (
-        <div className={classNames(className, condition ? isClassName : noClassName)} onClick={onClick}>
-            {children}
-        </div>
-    )
-}
+  const { className, isClassName, noClassName, condition, children, onClick } = props;
+  return (
+    <div className={classNames(className, condition ? isClassName : noClassName)} onClick={onClick}>
+      {children}
+    </div>
+  );
+};

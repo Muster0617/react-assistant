@@ -49,17 +49,6 @@ export default ({ history, location }) => {
     // if (['edit', 'info'].includes(type)) getFormData();
   }, []);
 
-  const showConfirm = () => {
-    Modal.confirm({
-      title: '提示',
-      content: '编辑的内容没有保存，是否继续取消操作',
-      cancelText: '我再想想',
-      onOk() {
-        history.goBack();
-      },
-    });
-  };
-
   const handleFinish = async (values) => {
     const payload = {
       ...values,
@@ -72,6 +61,36 @@ export default ({ history, location }) => {
     }
   };
 
+  const showConfirm = () => {
+    Modal.confirm({
+      title: '提示',
+      content: '编辑的内容没有保存，是否继续取消操作',
+      cancelText: '我再想想',
+      onOk() {
+        history.goBack();
+      },
+    });
+  };
+
+  const renderSubmitter = () => (
+    <div className={styles.submitter_wrap}>
+      {type === 'info' ? (
+        <Button type="primary" onClick={() => history.goBack()} key="back">
+          返回
+        </Button>
+      ) : (
+        <>
+          <Button onClick={showConfirm} key="cancel" style={{ marginRight: '20px' }}>
+            取消
+          </Button>
+          <Button type="primary" onClick={() => formRef.current.submit()} key="save">
+            保存
+          </Button>
+        </>
+      )}
+    </div>
+  );
+
   return (
     <PageHeaderWrapper title={title}>
       <div className={styles.wrapper}>
@@ -83,24 +102,7 @@ export default ({ history, location }) => {
           layout="horizontal"
           onFinish={handleFinish}
           submitter={{
-            render: (props, doms) => (
-              <div className={styles.submitter_wrap}>
-                {type === 'info' ? (
-                  <Button type="primary" onClick={() => history.goBack()} key="back">
-                    返回
-                  </Button>
-                ) : (
-                  <>
-                    <Button onClick={showConfirm} key="cancel" style={{ marginRight: '20px' }}>
-                      取消
-                    </Button>
-                    <Button type="primary" onClick={() => formRef.current.submit()} key="save">
-                      保存
-                    </Button>
-                  </>
-                )}
-              </div>
-            ),
+            render: renderSubmitter,
           }}
         >
           <ProFormText
