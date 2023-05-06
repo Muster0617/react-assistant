@@ -31,7 +31,7 @@ export default () => {
     },
   ];
 
-  const handleExport = (dataSource: any[] = [], columns: any[] = []) => {
+  const handlePdfExport = (dataSource: any[] = [], columns: any[] = []) => {
     const head = [columns?.map((column) => column.title)];
     const body = dataSource?.reduce((pre, cur, index) => {
       const dataMap = [];
@@ -59,5 +59,5 @@ export default () => {
     });
     doc.save('table.pdf');
   };
-  return <Button onClick={() => handleExport(data, exportPdfColumns)}>导出</Button>;
+  return <Button onClick={() => handlePdfExport(data, exportPdfColumns)}>导出</Button>;
 };
