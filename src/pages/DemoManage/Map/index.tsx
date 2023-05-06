@@ -5,9 +5,9 @@ import { useRef } from 'react';
 echarts.registerMap('map', china); //默认注册全国地图
 
 export default () => {
-  let curRef = useRef(null);
+  const curRef = useRef(null);
 
-  let option = {
+  const option = {
     title: {
       text: '全国地图',
       textStyle: {
@@ -105,45 +105,43 @@ export default () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100vh' }}>
-      <EChartsReact
-        option={option}
-        ref={curRef}
-        style={{ width: '100%', height: '100vh' }}
-        lazyUpdate={true}
-        notMerge={true}
-        onEvents={{
-          click: (param: any) => {
-            //echarts点击事件
-            if (param.name) {
-              //判断名称是否为空
-              const echartInstance = curRef.current.getEchartsInstance(); //获取echarts实例
-              let options = echartInstance.getOption(); //获取option
+    <EChartsReact
+      option={option}
+      ref={curRef}
+      style={{ width: '100%', height: '100%' }}
+      lazyUpdate={true}
+      notMerge={true}
+      onEvents={{
+        click: (param: any) => {
+          //echarts点击事件
+          if (param.name) {
+            //判断名称是否为空
+            const echartInstance = curRef.current.getEchartsInstance(); //获取echarts实例
+            const options = echartInstance.getOption(); //获取option
 
-              let provinceJSON = null;
-              try {
-                provinceJSON = require(`@/assets/MapJson/${param.name}.json`); //根据点击的省名称查询Geojson地图数据（我是将地图数据全部保存在本地，可根据API获取地图json）
-                echarts.registerMap('map', provinceJSON); //注册点击的省份地图
+            let provinceJSON = null;
+            try {
+              provinceJSON = require(`@/assets/MapJson/${param.name}.json`); //根据点击的省名称查询Geojson地图数据（我是将地图数据全部保存在本地，可根据API获取地图json）
+              echarts.registerMap('map', provinceJSON); //注册点击的省份地图
 
-                options.title[0].text = param.name + '地图';
-                options.series[0].name = param.name + '地图';
+              options.title[0].text = param.name + '地图';
+              options.series[0].name = param.name + '地图';
 
-                // options.series[0].center = china.features.find(item => item.properties.name === param.name)?.properties?.center//修改点击后地图中心位置，不用会存在偏移，我使用下边null,默认全局居中
-                options.series[0].center = null; //修改点击后地图中心位置，null默认全局居中
-                echartInstance.setOption(options, true); //修改echarts option
-              } catch (error) {
-                //获取Geojson地图异常返回到全国地图，我只存在市级地图数据，所以点击市级行政区会返回到全国地图。
-                options.title[0].text = '全国地图';
-                echarts.registerMap('map', china);
-                options.series[0].name = '全国地图';
+              // options.series[0].center = china.features.find(item => item.properties.name === param.name)?.properties?.center//修改点击后地图中心位置，不用会存在偏移，我使用下边null,默认全局居中
+              options.series[0].center = null; //修改点击后地图中心位置，null默认全局居中
+              echartInstance.setOption(options, true); //修改echarts option
+            } catch (error) {
+              //获取Geojson地图异常返回到全国地图，我只存在市级地图数据，所以点击市级行政区会返回到全国地图。
+              options.title[0].text = '全国地图';
+              echarts.registerMap('map', china);
+              options.series[0].name = '全国地图';
 
-                options.series[0].center = null;
-                echartInstance.setOption(options, true);
-              }
+              options.series[0].center = null;
+              echartInstance.setOption(options, true);
             }
-          },
-        }}
-      />
-    </div>
+          }
+        },
+      }}
+    />
   );
 };
