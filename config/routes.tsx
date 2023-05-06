@@ -27,9 +27,9 @@
         component: './DemoManage/Module',
       },
       {
-        path: '/demoManage/promise',
-        name: 'Promise',
-        component: './DemoManage/Promise',
+        path: '/demoManage/exportPdf',
+        name: 'ExportPdf',
+        component: './DemoManage/ExportPdf',
       },
     ],
   },
