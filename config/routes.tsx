@@ -31,6 +31,16 @@
         name: 'ExportPdf',
         component: './DemoManage/ExportPdf',
       },
+      {
+        path: '/demoManage/hooks',
+        name: 'Hooks',
+        component: './DemoManage/Hooks',
+      },
+      {
+        path: '/demoManage/braftEditor',
+        name: 'BraftEditor',
+        component: './DemoManage/BraftEditor',
+      },
     ],
   },
   {

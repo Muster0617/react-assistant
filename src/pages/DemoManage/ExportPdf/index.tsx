@@ -41,7 +41,6 @@ export default () => {
       pre.push(dataMap);
       return pre;
     }, []);
-    console.log(body, 'headers');
     jsPDF.autoTableSetDefaults({
       headStyles: { fillColor: [39, 38, 48] },
     });
