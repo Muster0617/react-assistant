@@ -1,7 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import styles from './index.less';
-import useInfiniteScroll from './useInfiniteScroll';
-import useHover from './useHover';
+import useInfiniteScroll from '@/hooks/useInfiniteScroll';
 
 const wait = (time) => {
   return new Promise((resolve) => {

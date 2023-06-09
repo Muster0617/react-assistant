@@ -5,15 +5,13 @@ export default () => {
   const ref = useRef();
 
   useEffect(() => {
-
     ref.current?.addEventListener('mouseover', () => {
       setIsHovered(true);
     });
-
     ref.current?.addEventListener('mouseout', () => {
       setIsHovered(false);
     });
-  }, []);
+  }, [isHovered]);
 
   return [ref, isHovered];
 };

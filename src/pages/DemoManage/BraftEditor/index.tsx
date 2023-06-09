@@ -1,26 +1,20 @@
 import { ProFormText, ProForm } from '@ant-design/pro-components';
 import { useEffect, useRef } from 'react';
-import BraftEditor from 'braft-editor';
-import 'braft-editor/dist/index.css';
 import { Form } from 'antd';
+import BraftEditor from '@/components/BraftEditor';
 
 export default () => {
   const formRef = useRef();
 
-  const controls = ['bold', 'italic', 'underline', 'text-color', 'separator', 'link'];
-
   useEffect(() => {
     formRef.current?.setFieldsValue({
-      content: BraftEditor.createEditorState('<p>Hello <b>World!</b></p>'),
+      content: '<p>Hello <b>World!</b></p>',
     });
   }, []);
 
   const handleFinish = async (values) => {
-    const { content } = values;
-    console.log(formRef, 'formRef');
     const payload = {
       ...values,
-      content: content.toHTML(),
     };
     console.log(payload, 'payload');
   };
@@ -43,22 +37,21 @@ export default () => {
         }}
       />
       <Form.Item
-        label="文章正文"
+        label="活动内容"
         name="content"
         rules={[
           {
             required: true,
-            validator: (_, value, callback) => {
-              console.log(value?.toText(), 'value');
-              if (!value?.toText()) {
-                return Promise.reject('请输入正文内容');
+            validator: (_, value) => {
+              if (value == '<p></p>') {
+                return Promise.reject(`请输入活动内容`);
               }
               return Promise.resolve();
             },
           },
         ]}
       >
-        <BraftEditor className="my-editor" controls={controls} placeholder="请输入正文内容" />
+        <BraftEditor />
       </Form.Item>
     </ProForm>
   );
