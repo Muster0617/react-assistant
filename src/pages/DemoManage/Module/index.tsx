@@ -3,8 +3,8 @@ import { Modal, message } from 'antd';
 import { useRef, useState } from 'react';
 import { history } from 'umi';
 import moment from 'moment';
-import ProTable from './ProTable.tsx';
-// import DrawerForm from './DrawerForm.tsx';
+import ProTable from './ProTable';
+// import DrawerForm from './DrawerForm';
 // import { queryPageList, deleteByIds } from '@/services/';
 
 const showConfirm = (props: any) => {
@@ -42,6 +42,7 @@ const getTableData = () => {
 export default () => {
   const actionRef = useRef();
   const reloadTable = () => actionRef.current?.reload();
+  const reloadAndRestTable = () => actionRef.current?.reloadAndRest();
   const [selectedRowKeys, setSelectedRowKeys] = useState<(string | number)[]>([]);
   const [selectedRows, setSelectedRows] = useState<[]>([]);
   // const [id, setId] = useState<string | number>('');
@@ -118,7 +119,7 @@ export default () => {
       {
         title: '创建时间',
         dataIndex: 'createTime',
-        valueType: 'dateRange',
+        valueType: 'dateTimeRange',
         fieldProps: {
           placeholder: ['开始时间', '结束时间'],
         },
@@ -136,7 +137,7 @@ export default () => {
           text: '详情',
           onClick: () => {
             //   setFormType('info');
-            //   setFormId(id);
+            //   setId(id);
             //   setOpen(true);
             //   history.push({
             //     pathname: '/form',
@@ -146,11 +147,11 @@ export default () => {
         },
         {
           text: '编辑',
-          show: id % 2 == 0,
+          visible: id % 2 == 0,
           color: 'red',
           onClick: () => {
             //   setFormType('edit');
-            //   setFormId(id);
+            //   setId(id);
             //   setOpen(true);
             //   history.push({
             //     pathname: '/form',
@@ -190,7 +191,7 @@ export default () => {
           //     }
           //   };
           //   showConfirm({ content: `是否要${operateName}所选择的列表项？`, onOk: handleDelete });
-          // } else message.warning('请勾选列表项');
+          // } else message.warning(`请选择要${operateName}的列表项`);
         },
       },
     ],

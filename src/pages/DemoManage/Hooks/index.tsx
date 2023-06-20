@@ -1,35 +1,35 @@
-import { useRef, useEffect, useState } from 'react';
+import { Row, Card, Col } from 'antd';
+import EmployInfiniteScroll from './EmployInfiniteScroll';
+import EmployExportExcel from './EmployExportExcel';
+import EmployHtmlPreView from './EmployHtmlPreView';
+import EmployTableToPdf from './EmployTableToPdf';
 import styles from './index.less';
-import useInfiniteScroll from '@/hooks/useInfiniteScroll';
-
-const wait = (time) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(null);
-    }, time);
-  });
-};
 
 export default () => {
-  const [isNoMore, setIsNoMore] = useState(false);
-
-  const listRef = useRef();
-  const loadMore = async (value) => {
-    console.log(value, 'value');
-    await wait(1000);
-    return [1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8];
-  };
-
-  const [data, loading] = useInfiniteScroll(listRef, loadMore, isNoMore);
-
   return (
-    <>
-      <div className={styles.wrapper} ref={listRef}>
-        {data?.map((item, key) => (
-          <div key={key}>{item}</div>
-        ))}
-      </div>
-      {loading && <div>加载中....</div>}
-    </>
+    <div className={styles.wrap}>
+      <Row gutter={[24, 24]}>
+        <Col span={12}>
+          <Card title="滚动懒加载：useInfiniteScroll">
+            <EmployInfiniteScroll />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="表格导出PDF：useTableToPdf">
+            <EmployTableToPdf />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="表格导出Excel：useExportExcel">
+            <EmployExportExcel />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="HTML代码预览：useHtmlPreView">
+            <EmployHtmlPreView />
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 };

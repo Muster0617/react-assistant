@@ -11,7 +11,7 @@ export default () => {
     ref.current?.addEventListener('mouseout', () => {
       setIsHovered(false);
     });
-  }, [isHovered]);
+  }, [ref]);
 
   return [ref, isHovered];
 };

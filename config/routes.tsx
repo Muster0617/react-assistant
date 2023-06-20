@@ -13,23 +13,13 @@
   },
   {
     path: '/demoManage',
-    name: 'Demo',
-    icon: 'InsertRowAboveOutlined',
+    name: 'DemoManage',
+    icon: 'HeatMapOutlined',
     routes: [
-      {
-        path: '/demoManage/map',
-        name: 'Map',
-        component: './DemoManage/Map',
-      },
       {
         path: '/demoManage/module',
         name: 'ProTableModule',
         component: './DemoManage/Module',
-      },
-      {
-        path: '/demoManage/exportPdf',
-        name: 'ExportPdf',
-        component: './DemoManage/ExportPdf',
       },
       {
         path: '/demoManage/hooks',
@@ -41,7 +31,18 @@
         name: 'BraftEditor',
         component: './DemoManage/BraftEditor',
       },
+      {
+        path: '/demoManage/QRCodeModal',
+        name: 'QRCodeModal',
+        component: './DemoManage/QRCodeModal',
+      },
     ],
+  },
+  {
+    path: '/echarts',
+    name: 'Echarts',
+    component: './Echarts',
+    icon: 'RadarChartOutlined',
   },
   {
     path: '/form',

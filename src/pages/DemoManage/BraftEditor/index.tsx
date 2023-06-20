@@ -5,16 +5,20 @@ import BraftEditor from '@/components/BraftEditor';
 
 export default () => {
   const formRef = useRef();
+  const editorRef = useRef({});
 
   useEffect(() => {
     formRef.current?.setFieldsValue({
-      content: '<p>Hello <b>World!</b></p>',
+      content: editorRef.current?.setFormBraftEditorImgSrc('<p>Hello <b>World!</b></p>', ''),
     });
   }, []);
 
   const handleFinish = async (values) => {
+    const { content = '' } = values;
     const payload = {
       ...values,
+      contentUrl: editorRef.current?.getFormBraftEditorRelativePath(content),
+      content: editorRef.current?.removeFormBraftEditorImgSrc(content),
     };
     console.log(payload, 'payload');
   };
@@ -23,6 +27,12 @@ export default () => {
     formRef: formRef,
     onFinish: handleFinish,
     layout: 'horizontal',
+    labelCol: {
+      span: 2,
+    },
+    wrapperCol: {
+      span: 15,
+    },
   };
 
   return (
@@ -43,7 +53,7 @@ export default () => {
           {
             required: true,
             validator: (_, value) => {
-              if (value == '<p></p>') {
+              if (!value || value == '<p></p>') {
                 return Promise.reject(`请输入活动内容`);
               }
               return Promise.resolve();
@@ -51,7 +61,10 @@ export default () => {
           },
         ]}
       >
-        <BraftEditor />
+        <BraftEditor
+          ref={editorRef}
+          // readonly
+        />
       </Form.Item>
     </ProForm>
   );

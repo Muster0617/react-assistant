@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { Tooltip, message } from 'antd';
 import Clipboard from 'clipboard';
 
@@ -130,3 +131,55 @@ export const copyText = (className, text) => {
     clipboard.destroy();
   });
 };
+
+export class OperateBraftEditorImg {
+  constructor() {
+    this.urlMap = [];
+    this.imgReg = /<img.*?(?:>|\/>)/gi;
+    this.srcReg = /src=[\'\"]?([^\'\"]*)[\'\"]?/i;
+    this.relativePathReg = /relativePath=[\'\"]?([^\'\"]*)[\'\"]?/i;
+  }
+  removeFormBraftEditorImgSrc = (htmlCode = '') => {
+    const imgArr = htmlCode?.match(this.imgReg) || [];
+    const srcList = imgArr.map((item) => item?.match(this.srcReg)[1]);
+    for (const src of srcList) {
+      const index = srcList?.indexOf(src);
+      htmlCode = htmlCode?.replace(src, `#${index + 1}`);
+    }
+    return htmlCode;
+  };
+  getFormBraftEditorRelativePath = (htmlCode = '') => {
+    const imgArr = htmlCode?.match(this.imgReg) || [];
+    const escape2Html = (str) => {
+      var arrEntities = { lt: '<', gt: '>', nbsp: ' ', amp: '&', quot: '"' };
+      return str.replace(/&(lt|gt|nbsp|amp|quot);/gi, function (all, t) {
+        return arrEntities[t];
+      });
+    };
+    const srcList = imgArr.map((item) => escape2Html(item?.match(this.srcReg)?.[1]));
+    const relativePathList = imgArr.map((item, index) => {
+      const relativePath = item?.match(this.relativePathReg)?.[1];
+      if (relativePath) {
+        return relativePath;
+      } else {
+        return this.urlMap?.find((row) => row.src == srcList?.[index])?.relativePath;
+      }
+    });
+    return relativePathList?.join(',');
+  };
+  setFormBraftEditorImgSrc = (htmlCode = '', urlJoin = '') => {
+    const imgArr = htmlCode?.match(this.imgReg) || [];
+    const srcList = imgArr.map((item) => item?.match(this.srcReg)?.[1]);
+    const relativePathList = imgArr.map((item) => item?.match(this.relativePathReg)[1]);
+    const urlList = urlJoin?.split(',');
+    for (const src of srcList) {
+      const index = srcList?.indexOf(src);
+      htmlCode = htmlCode.replace(src, urlList?.[index]);
+      this.urlMap.push({
+        relativePath: relativePathList?.[index],
+        src: urlList?.[index],
+      });
+    }
+    return htmlCode;
+  };
+}
