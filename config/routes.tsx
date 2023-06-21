@@ -9,23 +9,24 @@
     path: '/demoManage',
     name: 'DemoManage',
     icon: 'HeatMapOutlined',
-    routes: [
-      {
-        path: '/demoManage/module',
-        name: 'ProTableModule',
-        component: './DemoManage/Module',
-      },
-      {
-        path: '/demoManage/braftEditor',
-        name: 'BraftEditor',
-        component: './DemoManage/BraftEditor',
-      },
-      {
-        path: '/demoManage/antdTree',
-        name: 'AntdTree',
-        component: './DemoManage/AntdTree',
-      },
-    ],
+    component: './DemoManage',
+    // routes: [
+    //   {
+    //     path: '/demoManage/module',
+    //     name: 'ProTableModule',
+    //     component: './DemoManage/Module',
+    //   },
+    //   {
+    //     path: '/demoManage/braftEditor',
+    //     name: 'BraftEditor',
+    //     component: './DemoManage/BraftEditor',
+    //   },
+    //   {
+    //     path: '/demoManage/antdTree',
+    //     name: 'AntdTree',
+    //     component: './DemoManage/AntdTree',
+    //   },
+    // ],
   },
   {
     path: '/hooks',

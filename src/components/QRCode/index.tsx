@@ -24,7 +24,7 @@ export default forwardRef((props: any, ref) => {
   });
 
   useImperativeHandle(ref, () => ({
-    downloadQRCode: (imgName = '默认文件名') => {
+    downloadQRCode: ({ fileName = '默认文件名' }) => {
       const Qr: any = document.getElementById('bill_qr_code_url');
       //把canvas的数据改成base64的格式
       const canvasUrl = Qr.toDataURL('image/png');
@@ -33,7 +33,7 @@ export default forwardRef((props: any, ref) => {
       const myUrl = URL.createObjectURL(myBlob);
       const a = document.createElement('a');
       a.setAttribute('href', myUrl);
-      a.setAttribute('download', imgName);
+      a.setAttribute('download', fileName);
       a.setAttribute('target', '_blank');
       a.click();
     },

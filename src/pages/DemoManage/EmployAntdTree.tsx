@@ -25,7 +25,7 @@ const deepClone = (target: any) => {
   return flag;
 };
 
-const App: React.FC = () => {
+export default () => {
   const [treeData, setTreeData] = useState(initTreeData);
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const [loadedKeys, setLoadedKeys] = useState<Key[]>([]);
@@ -107,7 +107,7 @@ const App: React.FC = () => {
     });
 
   return (
-    <Card title="Tree组件子节点异步加载和局部刷新">
+    <>
       <div
         style={{
           display: 'flex',
@@ -135,8 +135,6 @@ const App: React.FC = () => {
         onExpand={(keys: Key[]) => setExpandedKeys(keys)}
         onLoad={(keys: Key[]) => setLoadedKeys(keys)}
       />
-    </Card>
+    </>
   );
 };
-
-export default App;

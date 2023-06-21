@@ -1,10 +1,25 @@
-.my_editor {
-  border: 1px solid #d1d1d1;
-  border-radius: 5px;
-  width: 820px;
-  :global {
-    .public-DraftEditor-content {
-      padding: 30px 20px;
+.wrapper {
+  width: 100%;
+  // width: 820px;
+
+  .readonly_operate {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .editor_container {
+    border: 1px solid #d1d1d1;
+    border-radius: 5px;
+    :global {
+      .public-DraftEditor-content {
+        padding: 30px 20px;
+      }
+      .public-DraftEditorPlaceholder-root {
+        top: 30px;
+        left: 20px;
+      }
     }
   }
 }

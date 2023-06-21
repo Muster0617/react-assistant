@@ -106,16 +106,9 @@ export default forwardRef((props: any, ref) => {
   ];
 
   return (
-    <>
+    <div className={styles.wrapper}>
       {readonly && (
-        <div
-          style={{
-            width: 820,
-            display: 'flex',
-            justifyContent: 'flex-end',
-            marginBottom: 12,
-          }}
-        >
+        <div className={styles.readonly_operate}>
           <Space>
             <Button type="primary" onClick={htmlPreView}>
               预览
@@ -128,10 +121,9 @@ export default forwardRef((props: any, ref) => {
       )}
       <BraftEditor
         ref={editorRef}
-        className={styles.my_editor}
+        className={styles.editor_container}
         value={editorState}
         onChange={(state) => {
-          console.log(state.toHTML(), 'state.toHTML()');
           onChange(state.toHTML());
           setEditorState(state);
         }}
@@ -141,6 +133,6 @@ export default forwardRef((props: any, ref) => {
         excludeControls={['media', 'code']}
       />
       <HtmlToPdf ref={htmlToPdfRef} />
-    </>
+    </div>
   );
 });

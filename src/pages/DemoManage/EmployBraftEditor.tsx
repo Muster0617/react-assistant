@@ -1,21 +1,23 @@
 import { ProForm } from '@ant-design/pro-components';
 import { useEffect, useRef, useState } from 'react';
-import { Form, Card, Button } from 'antd';
+import { Form, Space, Button } from 'antd';
 import BraftEditor from '@/components/BraftEditor';
-import styles from './index.less';
 
 export default () => {
   const [form] = Form.useForm();
-  const editorRef = useRef({});
+  const editorRef = useRef<any>({});
   const [readonly, setReadonly] = useState(false);
 
   useEffect(() => {
     form.setFieldsValue({
-      content: editorRef.current?.setFormBraftEditorImgSrc('<p>Hello <b>World!</b></p>', ''),
+      content: editorRef.current?.setFormBraftEditorImgSrc(
+        '<p>插入图片需更换实际OSS上传地址</p>',
+        '',
+      ),
     });
   }, []);
 
-  const handleFinish = async (values) => {
+  const handleFinish = async (values: { content: string }) => {
     const { content = '' } = values;
     const payload = {
       ...values,
@@ -28,39 +30,28 @@ export default () => {
   const formConfig = {
     form: form,
     onFinish: handleFinish,
-    layout: 'horizontal',
-    labelCol: {
-      span: 5,
-    },
-    wrapperCol: {
-      span: 16,
-    },
-    submitter: {
-      render: () => (
-        <div className={styles.submitter_wrap}>
-          <Button onClick={() => form.resetFields()} key="cancel" style={{ marginRight: '20px' }}>
-            重置
-          </Button>
-          <Button type="primary" onClick={() => form.submit()} key="save">
-            提交
-          </Button>
-        </div>
-      ),
-    },
+    submitter: false,
   };
 
   return (
-    <Card
-      title="BraftEditor"
-      extra={
-        <Button onClick={() => setReadonly(!readonly)} key="save">
-          切换只读
-        </Button>
-      }
-    >
+    <div>
+      <div
+        style={{
+          marginBottom: 24,
+        }}
+      >
+        <Space>
+          <Button onClick={() => setReadonly(!readonly)} key="cancel">
+            只读切换
+          </Button>
+          <Button onClick={() => form.submit()} key="save">
+            控制台输出
+          </Button>
+        </Space>
+      </div>
       <ProForm {...formConfig}>
         <Form.Item
-          label="活动内容"
+          label="富文本内容"
           name="content"
           {...(!readonly
             ? {
@@ -69,7 +60,7 @@ export default () => {
                     required: true,
                     validator: (_, value) => {
                       if (!value || value == '<p></p>') {
-                        return Promise.reject(`请输入活动内容`);
+                        return Promise.reject(`请输入富文本内容`);
                       }
                       return Promise.resolve();
                     },
@@ -81,6 +72,6 @@ export default () => {
           <BraftEditor ref={editorRef} readonly={readonly} />
         </Form.Item>
       </ProForm>
-    </Card>
+    </div>
   );
 };
