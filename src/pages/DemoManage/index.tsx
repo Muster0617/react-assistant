@@ -1,5 +1,5 @@
 import { Row, Card, Col } from 'antd';
-import EmployAntdTree from './EmployAntdTree';
+import EmployLazyLoadTree from './EmployLazyLoadTree';
 import EmployBraftEditor from './EmployBraftEditor';
 import EmployQRCode from './EmployQRCode';
 import styles from './index.less';
@@ -15,7 +15,7 @@ export default () => {
         </Col>
         <Col span={12}>
           <Card title="Tree组件子节点异步加载和局部刷新">
-            <EmployAntdTree />
+            <EmployLazyLoadTree />
           </Card>
         </Col>
         <Col span={12}>

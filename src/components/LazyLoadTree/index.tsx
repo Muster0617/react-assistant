@@ -1,6 +1,7 @@
 import type { Key } from 'react';
-import React, { useState } from 'react';
-import { Button, Tree, Card, Input } from 'antd';
+import { useEffect } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
+import { message, Tree } from 'antd';
 
 interface DataNode {
   title: string;
@@ -8,12 +9,6 @@ interface DataNode {
   children: DataNode[];
   isLeaf?: boolean;
 }
-
-const initTreeData: DataNode[] = [
-  { title: 'Expand to load -- 1', key: '1', children: [] },
-  { title: 'Expand to load -- 2', key: '2', children: [] },
-  { title: 'Tree Node -- 3', key: '3', isLeaf: true, children: [] },
-];
 
 const deepClone = (target: any) => {
   if (typeof target !== 'object') return target;
@@ -25,11 +20,21 @@ const deepClone = (target: any) => {
   return flag;
 };
 
-export default () => {
-  const [treeData, setTreeData] = useState(initTreeData);
+export default forwardRef(({ request, ...reset }: any, ref) => {
+  const [treeData, setTreeData] = useState<DataNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const [loadedKeys, setLoadedKeys] = useState<Key[]>([]);
-  const [reloadKey, setReloadKey] = useState<string>('');
+
+  const getTree = async () => {
+    const { data, success, errorMsg } = await request();
+    if (success) {
+      setTreeData(data || []);
+    } else message.error(errorMsg || '请求失败');
+  };
+
+  useEffect(() => {
+    getTree();
+  }, []);
 
   const updateTreeData = (data: DataNode[], key: string, children: DataNode[]) => {
     return data.map((node: DataNode) => {
@@ -78,63 +83,46 @@ export default () => {
     });
   };
 
-  const reloadNode = () => {
+  const reloadNode = (key: string) => {
     const data = deepClone(treeData);
-    const childKeys = getChildKeys(data, reloadKey);
-    setTreeData(resetNodeChild(data, reloadKey));
+    const childKeys = getChildKeys(data, key);
+    setTreeData(resetNodeChild(data, key));
     setLoadedKeys(loadedKeys?.filter((item) => !childKeys.includes(item)));
     setExpandedKeys(expandedKeys?.filter((item) => !childKeys.slice(1).includes(item)));
-
-    console.log(childKeys, 'childKeys');
   };
 
   const onLoadData = ({ key, isLeaf }: any) =>
-    new Promise<void>((resolve) => {
+    new Promise<void>(async (resolve) => {
       if (isLeaf) {
         resolve();
         return;
       }
-      setTimeout(() => {
-        setTreeData((origin) =>
-          updateTreeData(origin, key, [
-            { title: `Child Node ${key}-0`, key: `${key}-0`, children: [] },
-            { title: `Child Node ${key}-1`, key: `${key}-1`, children: [] },
-          ]),
-        );
-
-        resolve();
-      }, 1000);
+      const { data, success, errorMsg } = await request(key);
+      if (success) {
+        setTreeData((origin) => updateTreeData(origin, key, data));
+      } else message.error(errorMsg || '请求失败');
+      resolve();
     });
 
+  useImperativeHandle(ref, () => ({
+    reloadNode: reloadNode,
+    getTreeData: () => treeData,
+    setTreeData: (data: DataNode[]) => setTreeData(data),
+    getExpandedKeys: () => expandedKeys,
+    setExpandedKeys: (keys: string[]) => setExpandedKeys(keys),
+    getLoadedKeys: () => loadedKeys,
+    setLoadedKeys: (keys: string[]) => setLoadedKeys(keys),
+  }));
+
   return (
-    <>
-      <div
-        style={{
-          display: 'flex',
-          marginBottom: 24,
-        }}
-      >
-        <Input
-          style={{
-            width: 300,
-            marginRight: 24,
-          }}
-          value={reloadKey}
-          onChange={(e) => setReloadKey(e.target.value)}
-          placeholder="请输入节点的key"
-        />
-        <Button type="primary" onClick={reloadNode}>
-          刷新
-        </Button>
-      </div>
-      <Tree
-        loadData={onLoadData}
-        treeData={treeData}
-        loadedKeys={loadedKeys}
-        expandedKeys={expandedKeys}
-        onExpand={(keys: Key[]) => setExpandedKeys(keys)}
-        onLoad={(keys: Key[]) => setLoadedKeys(keys)}
-      />
-    </>
+    <Tree
+      loadData={onLoadData}
+      treeData={treeData}
+      loadedKeys={loadedKeys}
+      expandedKeys={expandedKeys}
+      onExpand={(keys: Key[]) => setExpandedKeys(keys)}
+      onLoad={(keys: Key[]) => setLoadedKeys(keys)}
+      {...reset}
+    />
   );
-};
+});
