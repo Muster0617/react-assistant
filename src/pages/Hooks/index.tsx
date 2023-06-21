@@ -1,24 +1,29 @@
-import React, { useState } from 'react';
+import { Row, Card, Col } from 'antd';
+import EmployExportExcel from './EmployExportExcel';
+import EmployHtmlPreView from './EmployHtmlPreView';
+import EmployTableToPdf from './EmployTableToPdf';
 import styles from './index.less';
-import { Tabs } from 'antd';
-import UseState from './components/UseState';
+
 export default () => {
-  const [activeKey, setActiveKey] = useState('1');
-  const renderTab = () => {
-    switch (activeKey) {
-      default:
-      case '1':
-        return <UseState />;
-    }
-  };
   return (
-    <div className={styles.wrapper}>
-      <Tabs accessKey={activeKey} onChange={(key) => setActiveKey(key)}>
-        <Tabs.TabPane tab="useState" key="1">
-          {renderTab()}
-        </Tabs.TabPane>
-        {renderTab()}
-      </Tabs>
+    <div className={styles.wrap}>
+      <Row gutter={[24, 24]}>
+        <Col span={12}>
+          <Card title="表格导出PDF：useTableToPdf">
+            <EmployTableToPdf />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="表格导出Excel：useExportExcel">
+            <EmployExportExcel />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="HTML代码预览：useHtmlPreView">
+            <EmployHtmlPreView />
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

@@ -1,6 +1,15 @@
 import { Button } from 'antd';
 import styles from './index.less';
 
+interface IFormButtonPros {
+  buttonClick: any;
+  buttonName: string;
+  label: string;
+  labelStyle: object;
+  required: boolean;
+  buttonProps: object;
+}
+
 export default ({
   buttonClick,
   buttonName,
@@ -8,14 +17,7 @@ export default ({
   labelStyle,
   required,
   buttonProps,
-}: {
-  buttonClick: () => {};
-  buttonName: string;
-  label: string;
-  labelStyle: object;
-  required: boolean;
-  buttonProps: object;
-}) => {
+}: IFormButtonPros) => {
   return (
     <div className={styles.form_item}>
       <div className={styles.form_item_label} style={{ ...labelStyle }}>

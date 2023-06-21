@@ -1,14 +1,16 @@
-import { ProFormText, ProForm } from '@ant-design/pro-components';
-import { useEffect, useRef } from 'react';
-import { Form } from 'antd';
+import { ProForm } from '@ant-design/pro-components';
+import { useEffect, useRef, useState } from 'react';
+import { Form, Card, Button } from 'antd';
 import BraftEditor from '@/components/BraftEditor';
+import styles from './index.less';
 
 export default () => {
-  const formRef = useRef();
+  const [form] = Form.useForm();
   const editorRef = useRef({});
+  const [readonly, setReadonly] = useState(false);
 
   useEffect(() => {
-    formRef.current?.setFieldsValue({
+    form.setFieldsValue({
       content: editorRef.current?.setFormBraftEditorImgSrc('<p>Hello <b>World!</b></p>', ''),
     });
   }, []);
@@ -24,48 +26,61 @@ export default () => {
   };
 
   const formConfig = {
-    formRef: formRef,
+    form: form,
     onFinish: handleFinish,
     layout: 'horizontal',
     labelCol: {
-      span: 2,
+      span: 5,
     },
     wrapperCol: {
-      span: 15,
+      span: 16,
+    },
+    submitter: {
+      render: () => (
+        <div className={styles.submitter_wrap}>
+          <Button onClick={() => form.resetFields()} key="cancel" style={{ marginRight: '20px' }}>
+            重置
+          </Button>
+          <Button type="primary" onClick={() => form.submit()} key="save">
+            提交
+          </Button>
+        </div>
+      ),
     },
   };
 
   return (
-    <ProForm {...formConfig}>
-      <ProFormText
-        // rules={[{ required: true }]}
-        name="Text"
-        label="Text"
-        placeholder="请输入Text"
-        fieldProps={{
-          maxLength: 100,
-        }}
-      />
-      <Form.Item
-        label="活动内容"
-        name="content"
-        rules={[
-          {
-            required: true,
-            validator: (_, value) => {
-              if (!value || value == '<p></p>') {
-                return Promise.reject(`请输入活动内容`);
+    <Card
+      title="BraftEditor"
+      extra={
+        <Button onClick={() => setReadonly(!readonly)} key="save">
+          切换只读
+        </Button>
+      }
+    >
+      <ProForm {...formConfig}>
+        <Form.Item
+          label="活动内容"
+          name="content"
+          {...(!readonly
+            ? {
+                rules: [
+                  {
+                    required: true,
+                    validator: (_, value) => {
+                      if (!value || value == '<p></p>') {
+                        return Promise.reject(`请输入活动内容`);
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ],
               }
-              return Promise.resolve();
-            },
-          },
-        ]}
-      >
-        <BraftEditor
-          ref={editorRef}
-          // readonly
-        />
-      </Form.Item>
-    </ProForm>
+            : {})}
+        >
+          <BraftEditor ref={editorRef} readonly={readonly} />
+        </Form.Item>
+      </ProForm>
+    </Card>
   );
 };

@@ -1,20 +1,21 @@
+import type { Key } from 'react';
 import React, { useState } from 'react';
-import { Button, Tree } from 'antd';
+import { Button, Tree, Card, Input } from 'antd';
 
 interface DataNode {
   title: string;
   key: string;
+  children: DataNode[];
   isLeaf?: boolean;
-  children?: DataNode[];
 }
 
 const initTreeData: DataNode[] = [
-  { title: 'Expand to load', key: '0' },
-  { title: 'Expand to load', key: '1' },
-  { title: 'Tree Node', key: '2', isLeaf: true },
+  { title: 'Expand to load -- 1', key: '1', children: [] },
+  { title: 'Expand to load -- 2', key: '2', children: [] },
+  { title: 'Tree Node -- 3', key: '3', isLeaf: true, children: [] },
 ];
 
-const deepClone = (target) => {
+const deepClone = (target: any) => {
   if (typeof target !== 'object') return target;
   const flag = target instanceof Array ? [] : {};
   for (const key in target) {
@@ -26,11 +27,12 @@ const deepClone = (target) => {
 
 const App: React.FC = () => {
   const [treeData, setTreeData] = useState(initTreeData);
-  const [expandedKeys, setExpandedKeys] = useState([]);
-  const [loadedKeys, setLoadedKeys] = useState([]);
+  const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
+  const [loadedKeys, setLoadedKeys] = useState<Key[]>([]);
+  const [reloadKey, setReloadKey] = useState<string>('');
 
-  const updateTreeData = (data, key, children) => {
-    return data.map((node) => {
+  const updateTreeData = (data: DataNode[], key: string, children: DataNode[]) => {
+    return data.map((node: DataNode) => {
       if (node?.key === key) {
         node.children = children;
       }
@@ -41,8 +43,8 @@ const App: React.FC = () => {
     });
   };
 
-  const getKeys = (data) => {
-    let keys = [];
+  const getKeys = (data: DataNode[]) => {
+    let keys: string[] = [];
     for (const item of data) {
       keys.push(item.key);
       if (item?.children?.length > 0) {
@@ -53,9 +55,8 @@ const App: React.FC = () => {
   };
 
   // 返回目标节点下子孙节点下的key
-  const getChildKeys = (data, key) => {
+  const getChildKeys = (data: DataNode[], key: string): any => {
     for (const item of data) {
-      console.log(item, 'item');
       if (item.key === key) {
         return getKeys([item]);
       }
@@ -65,7 +66,7 @@ const App: React.FC = () => {
     }
   };
 
-  const resetNodeChild = (data, key) => {
+  const resetNodeChild = (data: DataNode[], key: string) => {
     return data.map((node) => {
       if (node?.key === key) {
         node.children = [];
@@ -78,12 +79,9 @@ const App: React.FC = () => {
   };
 
   const reloadNode = () => {
-    const key = '0-0';
     const data = deepClone(treeData);
-    // 清除loadedKeys\
-    const childKeys = getChildKeys(data, key);
-
-    setTreeData(resetNodeChild(data, key));
+    const childKeys = getChildKeys(data, reloadKey);
+    setTreeData(resetNodeChild(data, reloadKey));
     setLoadedKeys(loadedKeys?.filter((item) => !childKeys.includes(item)));
     setExpandedKeys(expandedKeys?.filter((item) => !childKeys.slice(1).includes(item)));
 
@@ -99,8 +97,8 @@ const App: React.FC = () => {
       setTimeout(() => {
         setTreeData((origin) =>
           updateTreeData(origin, key, [
-            { title: 'Child Node', key: `${key}-0` },
-            { title: 'Child Node', key: `${key}-1` },
+            { title: `Child Node ${key}-0`, key: `${key}-0`, children: [] },
+            { title: `Child Node ${key}-1`, key: `${key}-1`, children: [] },
           ]),
         );
 
@@ -109,17 +107,35 @@ const App: React.FC = () => {
     });
 
   return (
-    <>
+    <Card title="Tree组件子节点异步加载和局部刷新">
+      <div
+        style={{
+          display: 'flex',
+          marginBottom: 24,
+        }}
+      >
+        <Input
+          style={{
+            width: 300,
+            marginRight: 24,
+          }}
+          value={reloadKey}
+          onChange={(e) => setReloadKey(e.target.value)}
+          placeholder="请输入节点的key"
+        />
+        <Button type="primary" onClick={reloadNode}>
+          刷新
+        </Button>
+      </div>
       <Tree
         loadData={onLoadData}
         treeData={treeData}
         loadedKeys={loadedKeys}
         expandedKeys={expandedKeys}
-        onExpand={(keys) => setExpandedKeys(keys)}
-        onLoad={(keys) => setLoadedKeys(keys)}
+        onExpand={(keys: Key[]) => setExpandedKeys(keys)}
+        onLoad={(keys: Key[]) => setLoadedKeys(keys)}
       />
-      <Button onClick={reloadNode}>刷新</Button>
-    </>
+    </Card>
   );
 };
 

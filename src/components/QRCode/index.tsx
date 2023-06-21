@@ -3,11 +3,11 @@ import { useReactToPrint } from 'react-to-print';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 
 const dataURLtoBlob = (dataurl: any) => {
-  const arr = dataurl.split(','),
-    mime = arr[0].match(/:(.*?);/)[1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n);
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
   while (n--) {
     u8arr[n] = bstr.charCodeAt(n);
   }
@@ -16,7 +16,7 @@ const dataURLtoBlob = (dataurl: any) => {
 
 export default forwardRef((props: any, ref) => {
   const { value, size = 200, style = {} } = props;
-  const codeRef = useRef();
+  const codeRef = useRef<HTMLDivElement>(null);
 
   const printQRCode = useReactToPrint({
     content: () => codeRef.current,
@@ -25,7 +25,7 @@ export default forwardRef((props: any, ref) => {
 
   useImperativeHandle(ref, () => ({
     downloadQRCode: (imgName = '默认文件名') => {
-      const Qr = document.getElementById('bill_qr_code_url');
+      const Qr: any = document.getElementById('bill_qr_code_url');
       //把canvas的数据改成base64的格式
       const canvasUrl = Qr.toDataURL('image/png');
       const myBlob = dataURLtoBlob(canvasUrl);
