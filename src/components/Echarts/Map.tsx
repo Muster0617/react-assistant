@@ -109,8 +109,8 @@ export default () => {
       option={option}
       ref={curRef}
       style={{ width: '100%', height: '100%' }}
-      lazyUpdate={true}
-      notMerge={true}
+      lazyUpdate
+      notMerge
       onEvents={{
         click: (param: any) => {
           //echarts点击事件

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Button, Input } from 'antd';
+import { Button, Input, Space } from 'antd';
 import LazyLoadTree from '@/components/LazyLoadTree';
 
 export default () => {
@@ -35,22 +35,22 @@ export default () => {
     <>
       <div
         style={{
-          display: 'flex',
-          marginBottom: 24,
+          marginBottom: 12,
         }}
       >
-        <Input
-          style={{
-            width: 300,
-            marginRight: 24,
-          }}
-          value={reloadKey}
-          onChange={(e) => setReloadKey(e.target.value)}
-          placeholder="请输入节点的key"
-        />
-        <Button type="primary" onClick={() => treeRef.current.reloadNode(reloadKey)}>
-          刷新
-        </Button>
+        <Space>
+          <Input
+            style={{
+              width: 300,
+            }}
+            value={reloadKey}
+            onChange={(e) => setReloadKey(e.target.value)}
+            placeholder="请输入节点的key"
+          />
+          <Button type="primary" onClick={() => treeRef.current.reloadNode(reloadKey)}>
+            刷新
+          </Button>
+        </Space>
       </div>
       <LazyLoadTree ref={treeRef} request={request} />
     </>

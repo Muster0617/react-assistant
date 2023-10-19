@@ -27,7 +27,7 @@ export default () => {
     console.log(payload, 'payload');
   };
 
-  const formConfig = {
+  const formConfig: any = {
     form: form,
     onFinish: handleFinish,
     submitter: false,

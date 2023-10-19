@@ -9,7 +9,7 @@ export default class OperateBraftEditorImg {
   }
 
   escape2Html = (str) => {
-    var arrEntities = { lt: '<', gt: '>', nbsp: ' ', amp: '&', quot: '"' };
+    const arrEntities = { lt: '<', gt: '>', nbsp: ' ', amp: '&', quot: '"' };
     return str.replace(/&(lt|gt|nbsp|amp|quot);/gi, function (all, t) {
       return arrEntities[t];
     });
@@ -20,15 +20,15 @@ export default class OperateBraftEditorImg {
     const srcList = imgArr.map((item) => item?.match(this.srcReg)[1]);
     for (const src of srcList) {
       const index = srcList?.indexOf(src);
-      const relativePath =
-        imgArr[index]?.match(this.relativePathReg)?.[1] || '';
+      const relativePath = imgArr[index]?.match(this.relativePathReg)?.[1] || '';
+      // eslint-disable-next-line no-param-reassign
       htmlCode = htmlCode?.replace(src, `#${index + 1}`);
       if (!relativePath) {
+        // eslint-disable-next-line no-param-reassign
         htmlCode = htmlCode?.replace(
           `src="#${index + 1}"`,
           `src="#${index + 1}" relativePath="${
-            this.urlMap?.find((row) => row.src == this.escape2Html(src))
-              ?.relativePath
+            this.urlMap?.find((row) => row.src == this.escape2Html(src))?.relativePath
           }"`,
         );
       }
@@ -38,16 +38,13 @@ export default class OperateBraftEditorImg {
   getFormBraftEditorRelativePath = (htmlCode = '') => {
     const imgArr = htmlCode?.match(this.imgReg) || [];
 
-    const srcList = imgArr.map((item) =>
-      this.escape2Html(item?.match(this.srcReg)?.[1]),
-    );
+    const srcList = imgArr.map((item) => this.escape2Html(item?.match(this.srcReg)?.[1]));
     const relativePathList = imgArr.map((item, index) => {
       const relativePath = item?.match(this.relativePathReg)?.[1];
       if (relativePath) {
         return relativePath;
       } else {
-        return this.urlMap?.find((row) => row.src == srcList?.[index])
-          ?.relativePath;
+        return this.urlMap?.find((row) => row.src == srcList?.[index])?.relativePath;
       }
     });
     return relativePathList?.join(',');
@@ -55,12 +52,11 @@ export default class OperateBraftEditorImg {
   setFormBraftEditorImgSrc = (htmlCode = '', urlJoin = '') => {
     const imgArr = htmlCode?.match(this.imgReg) || [];
     const srcList = imgArr.map((item) => item?.match(this.srcReg)?.[1]);
-    const relativePathList = imgArr.map(
-      (item) => item?.match(this.relativePathReg)[1],
-    );
+    const relativePathList = imgArr.map((item) => item?.match(this.relativePathReg)[1]);
     const urlList = urlJoin?.split(',');
     for (const src of srcList) {
       const index = srcList?.indexOf(src);
+      // eslint-disable-next-line no-param-reassign
       htmlCode = htmlCode.replace(src, urlList?.[index]);
       this.urlMap.push({
         relativePath: relativePathList?.[index],

@@ -7,7 +7,7 @@ import { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 're
 import { fileUpload } from './service';
 import styles from './index.less';
 import HtmlToPdf from './HtmlToPdf';
-import useHtmlPreView from '@/hooks/useHtmlPreView';
+import htmlPreView from '@/utils/htmlPreView';
 import OperateBraftEditorImg from './OperateBraftEditorImg.ts';
 const OperateImg = new OperateBraftEditorImg();
 
@@ -55,9 +55,7 @@ export default forwardRef((props: any, ref) => {
     htmlToPdfRef?.current?.downloadPdf(editorState.toHTML(), `${new Date().getTime()}`);
   };
 
-  const htmlPreView = useHtmlPreView({
-    htmlCode: editorState.toHTML(),
-  });
+  const handleHtmlPreView = () => htmlPreView(editorState.toHTML());
 
   const extendControls = [
     {
@@ -70,7 +68,7 @@ export default forwardRef((props: any, ref) => {
             type="button"
             className="control-item button"
             data-title="预览"
-            onClick={htmlPreView}
+            onClick={handleHtmlPreView}
           >
             预览
           </button>

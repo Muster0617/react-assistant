@@ -1,5 +1,6 @@
-export default ({ htmlCode }: any) => {
-  const buildPreviewHtml = (html: string) => {
+// @ts-nocheck
+export default (htmlCode) => {
+  const buildPreviewHtml = (html) => {
     return `
               <!Doctype html>
               <html>
@@ -58,12 +59,11 @@ export default ({ htmlCode }: any) => {
               </html>
             `;
   };
-  return () => {
-    if (window.previewWindow) {
-      window.previewWindow.close();
-    }
-    window.previewWindow = window.open();
-    window.previewWindow.document.write(buildPreviewHtml(htmlCode));
-    window.previewWindow.document.close();
-  };
+
+  if (window.previewWindow) {
+    window.previewWindow.close();
+  }
+  window.previewWindow = window.open();
+  window.previewWindow.document.write(buildPreviewHtml(htmlCode));
+  window.previewWindow.document.close();
 };

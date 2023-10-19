@@ -69,6 +69,7 @@ export default forwardRef(({ request, ...reset }: any, ref) => {
         return getChildKeys(item?.children, key);
       }
     }
+    return [];
   };
 
   const resetNodeChild = (data: DataNode[], key: string) => {
