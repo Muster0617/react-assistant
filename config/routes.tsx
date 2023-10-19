@@ -6,16 +6,22 @@
     icon: 'InsertRowAboveOutlined',
   },
   {
-    path: '/demoManage',
-    name: 'DemoManage',
+    path: '/demo',
+    name: 'Demo',
     icon: 'HeatMapOutlined',
-    component: '@/pages/DemoManage',
+    component: '@/pages/Demo',
   },
   {
     path: '/echarts',
     name: 'Echarts',
     component: '@/pages/Echarts',
     icon: 'RadarChartOutlined',
+  },
+  {
+    path: '/utils',
+    name: 'Utils',
+    component: '@/pages/Utils',
+    icon: 'RedditOutlined',
   },
   {
     path: '/',

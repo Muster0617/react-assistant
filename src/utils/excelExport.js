@@ -1,7 +1,7 @@
 import ExportJsonExcel from 'js-export-excel';
 import { message } from 'antd';
 
-export default (columns = [], data = [], fileName = '默认') => {
+export default ({ columns = [], data = [], fileName = '默认' }) => {
   const option = {
     fileName,
     datas: [
