@@ -14,6 +14,17 @@ export default defineConfig({
   dva: {
     hmr: true,
   },
+  chainWebpack(config, { env, webpack, createCSSRule }) {
+    config.module
+      .rule('docx')
+      .test(/\.(docx)(\?.*)?$/)
+      .use('file-loader')
+      .loader(require.resolve('file-loader'))
+      .tap((options) => ({
+        ...options,
+        name: 'static' + '/[name].[ext]',
+      }));
+  },
   layout: {
     // https://umijs.org/zh-CN/plugins/plugin-layout
     locale: false,

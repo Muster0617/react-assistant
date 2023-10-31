@@ -1,7 +1,13 @@
 import EChartsReact from 'echarts-for-react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 
-export default ({ data, unit }: any) => {
+export default forwardRef(({ data, unit }: any, ref) => {
+  const chartRef = useRef<any>(null);
   const total = data?.reduce((pre: any, { value }: any) => pre + value, 0);
+
+  useImperativeHandle(ref, () => {
+    return chartRef.current.getEchartsInstance();
+  });
 
   const option: any = {
     title: {
@@ -81,6 +87,12 @@ export default ({ data, unit }: any) => {
   };
 
   return (
-    <EChartsReact option={option} style={{ width: '100%', height: '100%' }} lazyUpdate notMerge />
+    <EChartsReact
+      ref={chartRef}
+      option={option}
+      style={{ width: '100%', height: '100%' }}
+      lazyUpdate
+      notMerge
+    />
   );
-};
+});

@@ -1,13 +1,20 @@
 import EChartsReact from 'echarts-for-react';
 import * as echarts from 'echarts';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 
-export default ({ xAxisData = [], series = [] }) => {
+export default forwardRef(({ xAxisData = [], series = [] }: any, ref) => {
+  const chartRef = useRef<any>(null);
+
+  useImperativeHandle(ref, () => {
+    return chartRef.current.getEchartsInstance();
+  });
+
   const option = {
     tooltip: {
       trigger: 'axis',
     },
     legend: {
-      data: series?.map((item) => item?.name),
+      data: series?.map((item: any) => item?.name),
     },
     grid: {
       left: '1%',
@@ -59,7 +66,7 @@ export default ({ xAxisData = [], series = [] }) => {
         position: 'right',
       },
     ],
-    series: series?.map((item) => {
+    series: series?.map((item: any) => {
       if (item.type == 'line') {
         item.symbol = 'circle';
         item.symbolSize = 6;
@@ -85,6 +92,12 @@ export default ({ xAxisData = [], series = [] }) => {
   };
 
   return (
-    <EChartsReact option={option} style={{ width: '100%', height: '100%' }} lazyUpdate notMerge />
+    <EChartsReact
+      ref={chartRef}
+      option={option}
+      style={{ width: '100%', height: '100%' }}
+      lazyUpdate
+      notMerge
+    />
   );
-};
+});

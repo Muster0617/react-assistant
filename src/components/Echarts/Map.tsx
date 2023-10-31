@@ -1,11 +1,15 @@
 import EChartsReact from 'echarts-for-react';
 import * as echarts from 'echarts';
-import china from '@/assets/MapJson/全国.json'; //默认引入全国地图
-import { useRef } from 'react';
-echarts.registerMap('map', china); //默认注册全国地图
+import china from '@/assets/json/全国.json'; //默认引入全国地图
+import { forwardRef, useImperativeHandle, useRef } from 'react';
+echarts.registerMap('map', china as any); //默认注册全国地图
 
-export default () => {
-  const curRef = useRef(null);
+export default forwardRef((props, ref) => {
+  const curRef = useRef<any>(null);
+
+  useImperativeHandle(ref, () => {
+    return curRef.current.getEchartsInstance();
+  });
 
   const option = {
     title: {
@@ -18,10 +22,10 @@ export default () => {
     tooltip: {
       // 提示框
       trigger: 'item', // 触发类型
-      formatter: function (params) {
+      formatter: function (params: any) {
         // 提示框浮层内容格式器，支持字符串模板和回调函数两种形式
-        let { data = {} } = params; // 第一个参数 `params` 是 formatter 需要的数据集
-        let { value = 0 } = data; // 传入的数据值
+        const { data = {} } = params; // 第一个参数 `params` 是 formatter 需要的数据集
+        const { value = 0 } = data; // 传入的数据值
         // params.name 数据名，类目名
         return `${params.name}<br/>个数: ${value}`;
       },
@@ -144,4 +148,4 @@ export default () => {
       }}
     />
   );
-};
+});
