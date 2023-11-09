@@ -109,7 +109,7 @@ export default forwardRef(({ request, ...reset }: any, ref) => {
       getLoadedKeys: () => loadedKeys,
       setLoadedKeys: (keys: string[]) => setLoadedKeys(keys),
     }),
-    [],
+    [expandedKeys, loadedKeys, reloadNode, treeData],
   );
 
   return (
