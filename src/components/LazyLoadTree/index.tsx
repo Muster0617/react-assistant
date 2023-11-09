@@ -3,13 +3,6 @@ import { useEffect } from 'react';
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { message, Tree } from 'antd';
 
-interface DataNode {
-  title: string;
-  key: string;
-  children: DataNode[];
-  isLeaf?: boolean;
-}
-
 const deepClone = (target: any) => {
   if (typeof target !== 'object') return target;
   const flag = target instanceof Array ? [] : {};
@@ -21,7 +14,7 @@ const deepClone = (target: any) => {
 };
 
 export default forwardRef(({ request, ...reset }: any, ref) => {
-  const [treeData, setTreeData] = useState<DataNode[]>([]);
+  const [treeData, setTreeData] = useState<any[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const [loadedKeys, setLoadedKeys] = useState<Key[]>([]);
 
@@ -36,8 +29,8 @@ export default forwardRef(({ request, ...reset }: any, ref) => {
     getTree();
   }, []);
 
-  const updateTreeData = (data: DataNode[], key: string, children: DataNode[]) => {
-    return data.map((node: DataNode) => {
+  const updateTreeData = (data: any[], key: string, children: any[]) => {
+    return data.map((node: any) => {
       if (node?.key === key) {
         node.children = children;
       }
@@ -48,7 +41,7 @@ export default forwardRef(({ request, ...reset }: any, ref) => {
     });
   };
 
-  const getKeys = (data: DataNode[]) => {
+  const getKeys = (data: any[]) => {
     let keys: string[] = [];
     for (const item of data) {
       keys.push(item.key);
@@ -60,7 +53,7 @@ export default forwardRef(({ request, ...reset }: any, ref) => {
   };
 
   // 返回目标节点下子孙节点下的key
-  const getChildKeys = (data: DataNode[], key: string): any => {
+  const getChildKeys = (data: any[], key: string): any => {
     for (const item of data) {
       if (item.key === key) {
         return getKeys([item]);
@@ -72,7 +65,7 @@ export default forwardRef(({ request, ...reset }: any, ref) => {
     return [];
   };
 
-  const resetNodeChild = (data: DataNode[], key: string) => {
+  const resetNodeChild = (data: any[], key: string) => {
     return data.map((node) => {
       if (node?.key === key) {
         node.children = [];
@@ -105,15 +98,19 @@ export default forwardRef(({ request, ...reset }: any, ref) => {
       resolve();
     });
 
-  useImperativeHandle(ref, () => ({
-    reloadNode: reloadNode,
-    getTreeData: () => treeData,
-    setTreeData: (data: DataNode[]) => setTreeData(data),
-    getExpandedKeys: () => expandedKeys,
-    setExpandedKeys: (keys: string[]) => setExpandedKeys(keys),
-    getLoadedKeys: () => loadedKeys,
-    setLoadedKeys: (keys: string[]) => setLoadedKeys(keys),
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      reloadNode: reloadNode,
+      getTreeData: () => treeData,
+      setTreeData: (data: any[]) => setTreeData(data),
+      getExpandedKeys: () => expandedKeys,
+      setExpandedKeys: (keys: string[]) => setExpandedKeys(keys),
+      getLoadedKeys: () => loadedKeys,
+      setLoadedKeys: (keys: string[]) => setLoadedKeys(keys),
+    }),
+    [],
+  );
 
   return (
     <Tree

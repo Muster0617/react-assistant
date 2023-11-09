@@ -26,7 +26,7 @@ export default forwardRef((props: any, ref) => {
 
   useEffect(() => {
     if (editorState.toHTML() !== value) setEditorState(BraftEditor.createEditorState(value));
-  }, [value]);
+  }, [editorState, value]);
 
   const uploadHandler = async ({ file = undefined }) => {
     if (!file) {
