@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import Cropper from 'react-cropper'; // 引入Cropper
 import 'cropperjs/dist/cropper.css'; // 引入Cropper对应的css
-import { Space, Button, Row, Col } from 'antd';
+import { Space, Button } from 'antd';
 
-const Demo = () => {
+export default () => {
   const ref = useRef<any>();
   const [imgSrc, setImgSrc] = useState(
     'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
@@ -65,5 +65,3 @@ const Demo = () => {
     </>
   );
 };
-
-export default Demo;

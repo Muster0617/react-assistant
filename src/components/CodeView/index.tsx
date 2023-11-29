@@ -1,11 +1,10 @@
-import { Divider, Button, Space } from 'antd';
+import { Button, Space } from 'antd';
 import styles from './index.less';
-import { useEffect } from 'react';
 import { copyText } from '@/utils/index';
 import Highlight, { defaultProps } from 'prism-react-renderer';
 import lightCodeTheme from './theme';
 
-export default (props) => {
+export default (props: any) => {
   const { codes } = props;
 
   //   useEffect(() => {

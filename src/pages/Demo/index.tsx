@@ -4,10 +4,16 @@ import EmployBraftEditor from './EmployBraftEditor';
 import EmployQRCode from './EmployQRCode';
 import EmployImgCropper from './EmployImgCropper';
 import EmployDragDrop from './EmployDragDrop';
+import EmployMap from './EmployMap';
 
 export default () => {
   return (
     <Row gutter={[24, 24]}>
+      <Col span={24}>
+        <Card title="高德地图">
+          <EmployMap />
+        </Card>
+      </Col>
       <Col span={24}>
         <Card title="拖拽排序">
           <EmployDragDrop />
