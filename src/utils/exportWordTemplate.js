@@ -7,7 +7,6 @@ export default (filePath, wordData, fileName = `${new Date().getTime()}`) => {
   return new Promise((resolve, reject) => {
     try {
       JSZipUtils.getBinaryContent(filePath, function (error, content) {
-        console.log(content, 'content--');
         if (error) {
           throw error;
         }

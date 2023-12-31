@@ -18,7 +18,7 @@ export default () => {
         </Card>
       </Col>
       <Col span={24}>
-        <Card title="表格导出PDF：@/utils/excelExport">
+        <Card title="表格导出PDF：@/utils/tableToPdf">
           <EmployTableToPdf />
         </Card>
       </Col>

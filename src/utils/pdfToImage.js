@@ -40,7 +40,6 @@ export default (file) => {
               pages.push(result);
             });
           }
-          console.log(pages, 'pages--');
           resolve(
             pages?.map(
               (item, index) =>

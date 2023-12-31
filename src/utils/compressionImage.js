@@ -30,7 +30,6 @@ export default async (file) => {
       height: height,
     })
       .then((res) => {
-        console.log(res, 'res---');
         if (!res.name) {
           res.name = file.name;
         }

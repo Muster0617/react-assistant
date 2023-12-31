@@ -15,8 +15,6 @@ export default ({ dataSource = [], columns = [], title = 'Title', fileName = 'é»
   jsPDF.autoTableSetDefaults({
     headStyles: { fillColor: [39, 38, 48] },
   });
-  console.log(body, 'body');
-  console.log(head, 'head');
 
   const doc = new jsPDF();
   doc.setFont('NotoSansCJKjp-Regular');

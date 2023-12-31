@@ -118,7 +118,6 @@ export const removeHtmlTag = (string = '') => {
  * @param {text} stirng - 要复印的内容
  */
 export const copyText = (className, text) => {
-  console.log('1');
   const clipboard = new Clipboard(className, {
     text: () => text,
   });
