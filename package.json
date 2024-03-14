@@ -14,9 +14,6 @@
   "lint-staged": {
     "*.{js,jsx,less,md,json}": [
       "prettier --write"
-    ],
-    "*.ts?(x)": [
-      "prettier --parser=typescript --write"
     ]
   },
   "dependencies": {
@@ -24,6 +21,7 @@
     "@ant-design/icons": "^4.7.0",
     "@ant-design/pro-components": "2.3.9",
     "@ant-design/pro-layout": "6.5.0",
+    "@fortune-sheet/react": "^0.19.2",
     "ahooks": "^3.7.1",
     "braft-editor": "^2.3.9",
     "classnames": "^2.3.0",
@@ -49,10 +47,6 @@
     "react-dom": "17.x",
     "react-to-print": "^2.14.13",
     "umi": "^3.5.41"
-  },
-  "resolutions": {
-    "@types/react": "17.0.2",
-    "@types/react-dom": "^17.0.2"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",
